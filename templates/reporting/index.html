@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}Reporting{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Reporting & Analytics</h1>
+    <p style="color:var(--gray-500);margin-top:4px">Auswertungen nach Kostenstelle, Zeitraum und Plattform</p>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <!-- Filter -->
+    <form method="GET" style="display:flex;gap:10px;align-items:center">
+      <select name="platform" class="form-control" style="width:180px" onchange="this.form.submit()">
+        <option value="all" {% if platform=='all' %}selected{% endif %}>Alle Plattformen</option>
+        <option value="google" {% if platform=='google' %}selected{% endif %}>Google Ads</option>
+        <option value="microsoft" {% if platform=='microsoft' %}selected{% endif %}>Microsoft Ads</option>
+      </select>
+      <select name="period" class="form-control" style="width:160px" onchange="this.form.submit()">
+        <option value="30" {% if period==30 %}selected{% endif %}>Letzte 30 Tage</option>
+        <option value="90" {% if period==90 %}selected{% endif %}>Letzte 90 Tage</option>
+        <option value="365" {% if period==365 %}selected{% endif %}>Letztes Jahr</option>
+        <option value="0" {% if period==0 %}selected{% endif %}>Gesamt</option>
+      </select>
+    </form>
+    <!-- Export Buttons -->
+    <a href="{{ url_for('export.excel', platform=platform, period=period) }}"
+       class="btn btn-secondary btn-sm" title="Als Excel herunterladen">
+      📊 Excel
+    </a>
+    <a href="{{ url_for('export.pdf', platform=platform, period=period) }}"
+       class="btn btn-secondary btn-sm" title="Als PDF mit Grafiken herunterladen">
+      📄 PDF
+    </a>
+  </div>
+</div>
+
+<!-- ── Gesamt-KPIs ─────────────────────────────────────────────────── -->
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:28px">
+
+  <div class="kpi-card">
+    <div class="kpi-label">AKTIVE KAMPAGNEN</div>
+    <div class="kpi-value">{{ stats.active_campaigns }}</div>
+    <div class="kpi-sub">{{ stats.total_campaigns }} gesamt</div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-label">GESAMTAUSGABEN</div>
+    <div class="kpi-value">{{ "%.0f"|format(stats.total_spend) }} €</div>
+    <div class="kpi-sub">Budget: {{ "%.0f"|format(stats.total_budget) }} €</div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-label">CONVERSIONS</div>
+    <div class="kpi-value">{{ stats.total_conversions }}</div>
+    <div class="kpi-sub">
+      {% if stats.total_spend > 0 and stats.total_conversions > 0 %}
+        Ø {{ "%.2f"|format(stats.total_spend / stats.total_conversions) }} € / Conv.
+      {% else %}–{% endif %}
+    </div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-label">KLICKS GESAMT</div>
+    <div class="kpi-value">{{ stats.total_clicks }}</div>
+    <div class="kpi-sub">
+      {% if stats.total_clicks > 0 and stats.total_conversions > 0 %}
+        CVR: {{ "%.1f"|format(stats.total_conversions / stats.total_clicks * 100) }}%
+      {% else %}–{% endif %}
+    </div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-label">IMPRESSIONEN</div>
+    <div class="kpi-value">
+      {% if stats.total_impressions >= 1000 %}
+        {{ "%.1f"|format(stats.total_impressions / 1000) }}k
+      {% else %}
+        {{ stats.total_impressions }}
+      {% endif %}
+    </div>
+    <div class="kpi-sub">
+      {% if stats.total_impressions > 0 and stats.total_clicks > 0 %}
+        CTR: {{ "%.2f"|format(stats.total_clicks / stats.total_impressions * 100) }}%
+      {% else %}–{% endif %}
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Auswertung nach Kostenstelle ──────────────────────────────────── -->
+<div class="card" style="margin-bottom:24px">
+  <div class="card-header"><span>📊 Auswertung nach Kostenstelle</span></div>
+  <div class="card-body" style="padding:0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Niederlassung</th>
+          <th>KST</th>
+          <th>Kampagnen</th>
+          <th>Ausgaben</th>
+          <th>Budget</th>
+          <th>Auslastung</th>
+          <th>Clicks</th>
+          <th>Conv.</th>
+          <th>CPA</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in kst_rows %}
+        <tr>
+          <td><strong>{{ row.name }}</strong></td>
+          <td><span class="badge">KST-{{ row.kostenstelle }}</span></td>
+          <td>{{ row.campaign_count }}</td>
+          <td>{{ "%.0f"|format(row.spend) }} €</td>
+          <td>{{ "%.0f"|format(row.budget) }} €</td>
+          <td>
+            {% set pct = [(row.spend / row.budget * 100), 100]|min|int if row.budget > 0 else 0 %}
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="progress-bar-wrap" style="width:80px">
+                <div class="progress-bar-fill {% if pct >= 80 %}danger{% endif %}"
+                     style="width:{{ pct }}%"></div>
+              </div>
+              <span style="font-size:12px;color:var(--gray-500)">{{ pct }}%</span>
+            </div>
+          </td>
+          <td>{{ row.clicks }}</td>
+          <td>{{ row.conversions }}</td>
+          <td>
+            {% if row.conversions > 0 and row.spend > 0 %}
+              {{ "%.2f"|format(row.spend / row.conversions) }} €
+            {% else %}–{% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" style="text-align:center;color:var(--gray-400);padding:32px">
+          Keine Daten für den gewählten Zeitraum.
+        </td></tr>
+        {% endfor %}
+      </tbody>
+      {% if kst_rows %}
+      <tfoot>
+        <tr style="font-weight:700;background:var(--gray-50)">
+          <td colspan="3">Gesamt</td>
+          <td>{{ "%.0f"|format(stats.total_spend) }} €</td>
+          <td>{{ "%.0f"|format(stats.total_budget) }} €</td>
+          <td></td>
+          <td>{{ stats.total_clicks }}</td>
+          <td>{{ stats.total_conversions }}</td>
+          <td>
+            {% if stats.total_conversions > 0 %}
+              {{ "%.2f"|format(stats.total_spend / stats.total_conversions) }} €
+            {% else %}–{% endif %}
+          </td>
+        </tr>
+      </tfoot>
+      {% endif %}
+    </table>
+  </div>
+</div>
+
+<!-- ── Kampagnen-Übersicht ────────────────────────────────────────────── -->
+<div class="card">
+  <div class="card-header"><span>📋 Kampagnen im Zeitraum</span></div>
+  <div class="card-body" style="padding:0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Kampagne</th>
+          <th>KST</th>
+          <th>Plattform</th>
+          <th>Ausgaben</th>
+          <th>Clicks</th>
+          <th>Conv.</th>
+          <th>CPA</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set status_badges = {
+          'pending_approval': ('warning', '⏳'),
+          'active':           ('success', '✅'),
+          'paused':           ('gray',    '⏸️'),
+          'completed':        ('primary', '✔️'),
+          'rejected':         ('danger',  '❌'),
+        } %}
+        {% for c in campaigns %}
+        {% set sb = status_badges.get(c.status, ('gray', '?')) %}
+        <tr>
+          <td>
+            <a href="{{ url_for('campaigns.detail', campaign_id=c.id) }}"
+               style="color:var(--primary);font-weight:600;text-decoration:none">
+              {{ c.name|truncate(45) }}
+            </a>
+          </td>
+          <td><span class="badge" style="font-size:11px">KST-{{ c.kostenstelle }}</span></td>
+          <td>
+            {% if c.platform in ('google','both') %}<span title="Google">🔵</span>{% endif %}
+            {% if c.platform in ('microsoft','both') %}<span title="Microsoft">🟣</span>{% endif %}
+          </td>
+          <td>{{ "%.0f"|format(c.total_cost) }} €</td>
+          <td>{{ c.total_clicks or 0 }}</td>
+          <td>{{ c.conversions or 0 }}</td>
+          <td>
+            {% if c.conversions and c.total_cost %}
+              {{ "%.2f"|format(c.total_cost / c.conversions) }} €
+            {% else %}–{% endif %}
+          </td>
+          <td><span class="badge badge-{{ sb[0] }}">{{ sb[1] }}</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" style="text-align:center;color:var(--gray-400);padding:32px">
+          Keine Kampagnen gefunden.
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

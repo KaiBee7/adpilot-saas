@@ -311,6 +311,86 @@ class Campaign(db.Model):
     def needs_budget_alert(self):
         return self.budget_spent_pct >= 80 and self.status == self.STATUS_ACTIVE
 
+    @property
+    def performance_score(self):
+        """
+        Adynex Performance Score (0–100).
+        Bewertet die Kampagne nach CTR, Conversion Rate, Budget-Effizienz
+        und Aktivitätsstatus – ähnlich dem Staffery Relevanz Score.
+
+        Bewertung:
+          80–100  → Sehr gut  (grün)
+          60–79   → Gut       (blau)
+          40–59   → Mittel    (orange)
+          0–39    → Schwach   (rot)
+        """
+        score = 0
+
+        # ── 1. CTR-Punkte (0–30) ────────────────────────────────
+        # Benchmark: 5% CTR = voll, 2% = halb, <0.5% = 0
+        if self.total_impressions and self.total_impressions > 0:
+            ctr = (self.total_clicks or 0) / self.total_impressions * 100
+            if ctr >= 5.0:
+                score += 30
+            elif ctr >= 2.0:
+                score += int(15 + (ctr - 2.0) / 3.0 * 15)
+            elif ctr >= 0.5:
+                score += int((ctr - 0.5) / 1.5 * 15)
+            # else: 0
+        elif self.status == self.STATUS_ACTIVE:
+            score += 10  # Läuft noch, noch keine Daten
+
+        # ── 2. Conversion Rate (0–35) ────────────────────────────
+        # Benchmark: 5% ConvRate = voll, 2% = halb, <0.5% = 0
+        if self.total_clicks and self.total_clicks > 0:
+            conv_rate = (self.conversions or 0) / self.total_clicks * 100
+            if conv_rate >= 5.0:
+                score += 35
+            elif conv_rate >= 2.0:
+                score += int(17 + (conv_rate - 2.0) / 3.0 * 18)
+            elif conv_rate >= 0.5:
+                score += int((conv_rate - 0.5) / 1.5 * 17)
+            # else: 0
+        elif self.status == self.STATUS_ACTIVE:
+            score += 10  # Läuft noch, noch keine Conversions
+
+        # ── 3. Budget-Effizienz (0–20) ───────────────────────────
+        # Ideal: 40–85% Auslastung = voll, <10% = 0, >95% = gut aber nicht perfekt
+        pct = self.budget_spent_pct
+        if 40 <= pct <= 85:
+            score += 20
+        elif 85 < pct <= 95:
+            score += 15
+        elif pct > 95:
+            score += 10
+        elif pct >= 20:
+            score += int((pct - 20) / 20 * 10)
+        # <20%: 0
+
+        # ── 4. Status-Bonus (0–15) ────────────────────────────────
+        if self.status == self.STATUS_ACTIVE:
+            score += 15
+        elif self.status == self.STATUS_COMPLETED:
+            score += 10
+        elif self.status == self.STATUS_PENDING_APPROVAL:
+            score += 5
+        # paused/rejected: 0
+
+        return min(100, max(0, score))
+
+    @property
+    def performance_label(self):
+        """Gibt ein Label + CSS-Klasse für den Score zurück."""
+        s = self.performance_score
+        if s >= 80:
+            return ("Sehr gut",  "good")
+        elif s >= 60:
+            return ("Gut",       "")
+        elif s >= 40:
+            return ("Mittel",    "warn")
+        else:
+            return ("Schwach",   "alert")
+
     def __repr__(self):
         return f"<Campaign '{self.name}' [{self.status}]>"
 

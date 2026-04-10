@@ -14,6 +14,8 @@ from routes.dashboard  import dashboard_bp
 from routes.campaigns  import campaigns_bp
 from routes.admin      import admin_bp
 from routes.api        import api_bp
+from routes.reporting  import reporting_bp
+from routes.export     import export_bp
 
 load_dotenv()
 
@@ -52,6 +54,8 @@ def create_app():
     app.register_blueprint(campaigns_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(api_bp)
+    app.register_blueprint(reporting_bp)
+    app.register_blueprint(export_bp)
 
     # ── Fehler-Handler ────────────────────────────────────────────────────
     register_error_handlers(app)

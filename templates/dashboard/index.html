@@ -23,7 +23,8 @@
 {% endif %}
 
 {# ── KPI-Kacheln ── #}
-<div class="kpi-grid">
+{% set avg_cpa = (total_spend / total_conversions) if total_conversions > 0 else 0 %}
+<div class="kpi-grid" style="grid-template-columns: repeat(5,1fr)">
   <div class="kpi-card good">
     <div class="kpi-label">Aktive Kampagnen</div>
     <div class="kpi-value">{{ active_count }}</div>
@@ -43,6 +44,11 @@
     <div class="kpi-label">Conversions gesamt</div>
     <div class="kpi-value">{{ total_conversions }}</div>
     <div class="kpi-sub">Bewerbungen / Leads</div>
+  </div>
+  <div class="kpi-card {% if avg_cpa > 0 and avg_cpa <= 25 %}good{% elif avg_cpa > 50 %}alert{% elif avg_cpa > 0 %}warn{% endif %}">
+    <div class="kpi-label">Ø CPA</div>
+    <div class="kpi-value">{% if avg_cpa > 0 %}{{ avg_cpa | round(2) }} €{% else %}–{% endif %}</div>
+    <div class="kpi-sub">Kosten pro Bewerbung</div>
   </div>
 </div>
 
@@ -114,6 +120,7 @@
           <th>Budget</th>
           <th>Ausgaben</th>
           <th>Conv.</th>
+          <th>Score</th>
           <th>Status</th>
           <th></th>
         </tr>
@@ -150,6 +157,20 @@
             {% if c.conversion_limit %}
               / {{ c.conversion_limit }}
             {% endif %}
+          </td>
+          <td>
+            {% set score = c.performance_score %}
+            {% set score_label, score_cls = c.performance_label %}
+            <div style="display:flex;align-items:center;gap:6px">
+              <div style="width:36px;height:36px;border-radius:50%;
+                          background:{% if score >= 80 %}#DCFCE7{% elif score >= 60 %}#E8EEF7{% elif score >= 40 %}#FEF9C3{% else %}#FEE2E2{% endif %};
+                          display:flex;align-items:center;justify-content:center;
+                          font-size:0.75rem;font-weight:800;
+                          color:{% if score >= 80 %}#166534{% elif score >= 60 %}#003087{% elif score >= 40 %}#854D0E{% else %}#991B1B{% endif %}">
+                {{ score }}
+              </div>
+              <span style="font-size:0.72rem;color:#6B7280">{{ score_label }}</span>
+            </div>
           </td>
           <td>
             <span class="badge badge-{{ c.status }}">

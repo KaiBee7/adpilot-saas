@@ -214,6 +214,9 @@
       <a href="{{ url_for('campaigns.new_campaign') }}" class="nav-link">
         <span class="icon">➕</span> Neue Kampagne
       </a>
+      <a href="{{ url_for('reporting.index') }}" class="nav-link {% if 'reporting' in request.endpoint %}active{% endif %}">
+        <span class="icon">📈</span> Reporting
+      </a>
 
       {% if current_user.is_admin %}
       <div class="nav-section" style="margin-top:1rem;">Administration</div>
