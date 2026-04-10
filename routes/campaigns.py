@@ -290,7 +290,7 @@ def _notify_admin_new_campaign(campaign: Campaign):
         try:
             _send_email(
                 to=admin.email,
-                subject=f"[AdPilot] Neue Kampagne wartet auf Freigabe: {campaign.name}",
+                subject=f"[Adynex] Neue Kampagne wartet auf Freigabe: {campaign.name}",
                 body=f"""
 Hallo {admin.full_name},
 
@@ -304,7 +304,7 @@ Erstellt von: {campaign.creator.full_name if campaign.creator else 'Unbekannt'}
 Zur Freigabe: http://localhost:5000/campaigns/{campaign.id}
 
 Mit freundlichen Grüßen
-AdPilot
+Adynex
                 """.strip()
             )
             log = NotificationLog(

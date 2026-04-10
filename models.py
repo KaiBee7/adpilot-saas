@@ -1,5 +1,5 @@
 """
-AdPilot – Datenbank-Modelle
+Adynex – Datenbank-Modelle
 ============================
 Multi-Tenant SaaS Struktur:
 
@@ -32,7 +32,7 @@ db = SQLAlchemy()
 # ════════════════════════════════════════════════════════════════════════════
 class Mandant(db.Model):
     """
-    Ein Mandant = ein Unternehmen das AdPilot nutzt.
+    Ein Mandant = ein Unternehmen das Adynex nutzt.
     Beispiel: Hofmann Personal GmbH & Co. KG
     """
     __tablename__ = "mandanten"
@@ -95,7 +95,7 @@ class User(db.Model, UserMixin):
     """
     Ein Nutzer innerhalb eines Mandanten.
     Rollen:
-      - superadmin: AdPilot-interner Admin (plattformübergreifend)
+      - superadmin: Adynex-interner Admin (plattformübergreifend)
       - admin:      Mandanten-Admin (sieht alle Niederlassungen des Mandanten)
       - branch:     Niederlassung (sieht nur eigene Kampagnen, KST ist fest)
       - viewer:     Nur Lese-Zugriff auf Dashboard & Reports

@@ -1,7 +1,7 @@
 @echo off
 echo.
 echo ================================
-echo   AdPilot - Deployment starten
+echo   Adynex - Deployment starten
 echo ================================
 echo.
 
@@ -22,7 +22,7 @@ echo ================================
 echo   Fertig! Render deployed nun
 echo   automatisch die neue Version.
 echo.
-echo   https://adpilot-saas.onrender.com
+echo   https://adynex.de
 echo ================================
 echo.
 pause

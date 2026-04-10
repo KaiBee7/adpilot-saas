@@ -1,4 +1,4 @@
-# AdPilot – Python Dependencies
+# Adynex – Python Dependencies
 
 # Web-Framework & Extensions
 flask>=3.0.0

@@ -1,5 +1,5 @@
 """
-AdPilot – Authentifizierung & Autorisierung
+Adynex – Authentifizierung & Autorisierung
 ============================================
 Login, Logout, Passwort-Reset, Rollen-Checks.
 
@@ -35,7 +35,7 @@ def admin_required(f):
 
 
 def superadmin_required(f):
-    """Nur AdPilot-interne Superadmins."""
+    """Nur Adynex-interne Superadmins."""
     @wraps(f)
     def decorated(*args, **kwargs):
         if not current_user.is_authenticated or not current_user.is_superadmin:
@@ -98,7 +98,7 @@ def login():
             return render_template("auth/login.html")
 
         if not user.mandant.is_active:
-            flash("Ihr Unternehmen ist nicht aktiv. Bitte kontaktieren Sie AdPilot.", "error")
+            flash("Ihr Unternehmen ist nicht aktiv. Bitte kontaktieren Sie Adynex.", "error")
             return render_template("auth/login.html")
 
         login_user(user, remember=remember)

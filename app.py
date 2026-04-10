@@ -1,5 +1,5 @@
 """
-AdPilot – Hauptapplikation
+Adynex – Hauptapplikation
 ===========================
 Multi-Tenant SaaS für automatisierte Search-Kampagnen.
 """
@@ -24,7 +24,7 @@ def create_app():
     # ── Konfiguration ─────────────────────────────────────────────────────
     app.config["SECRET_KEY"]           = os.getenv("FLASK_SECRET_KEY", "dev-key-change-in-prod")
     # Render nutzt postgres:// aber SQLAlchemy braucht postgresql://
-    database_url = os.getenv("DATABASE_URL", "sqlite:///adpilot.db")
+    database_url = os.getenv("DATABASE_URL", "sqlite:///adynex.db")
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
@@ -88,10 +88,10 @@ def _seed_demo_data():
     if Mandant.query.first():
         return  # Bereits Daten vorhanden
 
-    # Demo-Mandant: Hofmann Personal
+    # Demo-Mandant: Musterfirma
     mandant = Mandant(
-        name="Hofmann Personal GmbH",
-        slug="hofmann",
+        name="Musterfirma GmbH",
+        slug="demo",
         plan="professional",
         primary_color="#003087",
         onboarding_done=True,
@@ -102,8 +102,8 @@ def _seed_demo_data():
     # Admin-User
     admin = User(
         mandant_id=mandant.id,
-        email="admin@hofmann.info",
-        first_name="Kai",
+        email="admin@adynex.de",
+        first_name="Demo",
         last_name="Admin",
         role="admin",
     )
@@ -112,20 +112,20 @@ def _seed_demo_data():
 
     # Demo-Niederlassungen
     niederlassungen = [
-        Niederlassung(mandant_id=mandant.id, name="Leipzig",           kostenstelle="42",  city="Leipzig",           plz="04109", standort_url="https://www.hofmann.info/standorte/leipzig/",           group_id="2001"),
-        Niederlassung(mandant_id=mandant.id, name="Eisenhüttenstadt",  kostenstelle="180", city="Eisenhüttenstadt",  plz="15890", standort_url="https://www.hofmann.info/standorte/eisenhuettenstadt/", group_id="2129"),
-        Niederlassung(mandant_id=mandant.id, name="Hamburg",           kostenstelle="55",  city="Hamburg",           plz="20095", standort_url="https://www.hofmann.info/standorte/hamburg/",           group_id="2050"),
+        Niederlassung(mandant_id=mandant.id, name="Berlin",   kostenstelle="10", city="Berlin",   plz="10115", standort_url="https://www.beispiel.de/standorte/berlin/",   group_id="1001"),
+        Niederlassung(mandant_id=mandant.id, name="Hamburg",  kostenstelle="20", city="Hamburg",  plz="20095", standort_url="https://www.beispiel.de/standorte/hamburg/",  group_id="1002"),
+        Niederlassung(mandant_id=mandant.id, name="München",  kostenstelle="30", city="München",  plz="80331", standort_url="https://www.beispiel.de/standorte/muenchen/", group_id="1003"),
     ]
     for n in niederlassungen:
         db.session.add(n)
     db.session.flush()
 
-    # Branch-User für Leipzig
+    # Branch-User
     branch_user = User(
         mandant_id=mandant.id,
         niederlassung_id=niederlassungen[0].id,
-        email="leipzig@hofmann.info",
-        first_name="Leipzig",
+        email="branch@adynex.de",
+        first_name="Demo",
         last_name="Niederlassung",
         role="branch",
     )
@@ -136,15 +136,15 @@ def _seed_demo_data():
     demo_campaign = Campaign(
         niederlassung_id=niederlassungen[1].id,
         mandant_id=mandant.id,
-        name="[KST-180] Recruiter (m/w/d) | Eisenhüttenstadt | ID-898874",
+        name="[KST-20] Vertriebsmitarbeiter (m/w/d) | Hamburg | ID-100001",
         campaign_type=Campaign.TYPE_SINGLE_JOB,
         platform=Campaign.PLATFORM_BOTH,
         status=Campaign.STATUS_ACTIVE,
-        job_title="Recruiter (m/w/d)",
-        job_url="https://www.hofmann.info/jobs/stellenanzeige/Z18Y8HC-recruiter-mwd_15890-eisenhuettenstadt",
-        job_id="898874",
-        location="15890 Eisenhüttenstadt",
-        kostenstelle="180",
+        job_title="Vertriebsmitarbeiter (m/w/d)",
+        job_url="https://www.beispiel.de/jobs/vertrieb-hamburg",
+        job_id="100001",
+        location="Hamburg",
+        kostenstelle="20",
         budget_google=125.0,
         budget_microsoft=125.0,
         conversion_limit=10,
