@@ -208,19 +208,19 @@
       <a href="{{ url_for('dashboard.index') }}" class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
         <span class="icon">📊</span> Dashboard
       </a>
-      <a href="{{ url_for('campaigns.list_campaigns') }}" class="nav-link {% if 'campaigns' in request.endpoint %}active{% endif %}">
+      <a href="{{ url_for('campaigns.list_campaigns') }}" class="nav-link {% if request.endpoint and 'campaigns' in request.endpoint %}active{% endif %}">
         <span class="icon">🚀</span> Kampagnen
       </a>
       <a href="{{ url_for('campaigns.new_campaign') }}" class="nav-link">
         <span class="icon">➕</span> Neue Kampagne
       </a>
-      <a href="{{ url_for('reporting.index') }}" class="nav-link {% if 'reporting' in request.endpoint %}active{% endif %}">
+      <a href="{{ url_for('reporting.index') }}" class="nav-link {% if request.endpoint and 'reporting' in request.endpoint %}active{% endif %}">
         <span class="icon">📈</span> Reporting
       </a>
 
       {% if current_user.is_admin %}
       <div class="nav-section" style="margin-top:1rem;">Administration</div>
-      <a href="{{ url_for('admin.index') }}" class="nav-link {% if 'admin' in request.endpoint %}active{% endif %}">
+      <a href="{{ url_for('admin.index') }}" class="nav-link {% if request.endpoint and 'admin' in request.endpoint %}active{% endif %}">
         <span class="icon">⚙️</span> Verwaltung
       </a>
       <a href="{{ url_for('admin.new_niederlassung') }}" class="nav-link">

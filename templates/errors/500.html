@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Serverfehler – Adynex{% endblock %}
+{% block page_title %}500{% endblock %}
+
+{% block content %}
+<div style="text-align:center; padding: 4rem 2rem;">
+  <div style="font-size:5rem; margin-bottom:1rem;">⚙️</div>
+  <h2 style="font-size:1.75rem; color:#003087; margin-bottom:0.75rem;">Interner Serverfehler</h2>
+  <p style="color:#6B7280; margin-bottom:2rem; max-width:400px; margin-left:auto; margin-right:auto;">
+    Etwas ist schiefgelaufen. Bitte versuche es in wenigen Minuten erneut.
+  </p>
+  <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">
+    ← Zurück zum Dashboard
+  </a>
+</div>
+{% endblock %}

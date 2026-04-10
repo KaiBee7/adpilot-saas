@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Seite nicht gefunden – Adynex{% endblock %}
+{% block page_title %}404{% endblock %}
+
+{% block content %}
+<div style="text-align:center; padding: 4rem 2rem;">
+  <div style="font-size:5rem; margin-bottom:1rem;">🔍</div>
+  <h2 style="font-size:1.75rem; color:#003087; margin-bottom:0.75rem;">Seite nicht gefunden</h2>
+  <p style="color:#6B7280; margin-bottom:2rem; max-width:400px; margin-left:auto; margin-right:auto;">
+    Die gesuchte Seite existiert nicht oder wurde verschoben.
+  </p>
+  <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">
+    ← Zurück zum Dashboard
+  </a>
+</div>
+{% endblock %}
