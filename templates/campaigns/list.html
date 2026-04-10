@@ -62,9 +62,9 @@
           </td>
           <td>{{ "%.0f"|format(c.total_budget) }} €</td>
           <td>
-            {{ "%.0f"|format(c.total_spend) }} €
+            {{ "%.0f"|format(c.total_cost or 0) }} €
             {% if c.total_budget > 0 %}
-            {% set pct = [(c.total_spend / c.total_budget * 100), 100]|min|int %}
+            {% set pct = [((c.total_cost or 0) / c.total_budget * 100), 100]|min|int %}
             <div class="progress-bar-wrap" style="margin-top:4px;width:80px">
               <div class="progress-bar-fill {% if pct >= 80 %}danger{% endif %}"
                    style="width:{{ pct }}%"></div>
@@ -72,7 +72,7 @@
             {% endif %}
           </td>
           <td>
-            {{ c.conversions_count }}
+            {{ c.conversions or 0 }}
             {% if c.conversion_limit %}/ {{ c.conversion_limit }}{% endif %}
           </td>
           <td><span class="badge badge-{{ sb[0] }}">{{ sb[1] }}</span></td>

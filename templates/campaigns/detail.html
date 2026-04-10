@@ -61,10 +61,10 @@
 
   <div class="kpi-card">
     <div class="kpi-label">AUSGABEN GESAMT</div>
-    <div class="kpi-value">{{ "%.0f"|format(campaign.total_spend) }} €</div>
+    <div class="kpi-value">{{ "%.0f"|format(campaign.total_cost or 0) }} €</div>
     <div class="kpi-sub">Budget: {{ "%.0f"|format(campaign.total_budget) }} €</div>
     {% if campaign.total_budget > 0 %}
-    {% set pct = [(campaign.total_spend / campaign.total_budget * 100), 100]|min|int %}
+    {% set pct = [((campaign.total_cost or 0) / campaign.total_budget * 100), 100]|min|int %}
     <div class="progress-bar-wrap" style="margin-top:10px">
       <div class="progress-bar-fill {% if pct >= 80 %}danger{% endif %}"
            style="width:{{ pct }}%"></div>
@@ -74,7 +74,7 @@
 
   <div class="kpi-card">
     <div class="kpi-label">CONVERSIONS</div>
-    <div class="kpi-value">{{ campaign.conversions_count }}</div>
+    <div class="kpi-value">{{ campaign.conversions or 0 }}</div>
     {% if campaign.conversion_limit %}
     <div class="kpi-sub">Limit: {{ campaign.conversion_limit }} → Auto-Pause</div>
     {% else %}
@@ -84,10 +84,10 @@
 
   <div class="kpi-card">
     <div class="kpi-label">KLICKS</div>
-    <div class="kpi-value">{{ campaign.clicks or 0 }}</div>
+    <div class="kpi-value">{{ campaign.total_clicks or 0 }}</div>
     <div class="kpi-sub">
-      {% if campaign.clicks and campaign.conversions_count %}
-        CVR: {{ "%.1f"|format(campaign.conversions_count / campaign.clicks * 100) }}%
+      {% if campaign.total_clicks and campaign.conversions %}
+        CVR: {{ "%.1f"|format(campaign.conversions / campaign.total_clicks * 100) }}%
       {% else %}
         –
       {% endif %}
@@ -155,7 +155,7 @@
             <tr>
               <td><strong>{{ cluster.cluster_label }}</strong></td>
               <td>{{ "%.0f"|format(cluster.budget_monthly or 0) }} €/Monat</td>
-              <td>{{ cluster.conversions_count or 0 }}
+              <td>{{ cluster.conversions or 0 }}
                 {% if cluster.conversion_limit %} / {{ cluster.conversion_limit }}{% endif %}
               </td>
               <td>

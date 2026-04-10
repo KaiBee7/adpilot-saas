@@ -35,8 +35,8 @@ def index():
     all_campaigns  = campaigns_query.all()
     active_count   = sum(1 for c in all_campaigns if c.status == Campaign.STATUS_ACTIVE)
     pending_count  = sum(1 for c in all_campaigns if c.status == Campaign.STATUS_PENDING_APPROVAL)
-    total_spend    = sum(c.total_cost for c in all_campaigns)
-    total_conv     = sum(c.conversions for c in all_campaigns)
+    total_spend    = sum(c.total_cost or 0 for c in all_campaigns)
+    total_conv     = sum(c.conversions or 0 for c in all_campaigns)
 
     # Budget-Alerts
     alerts = [c for c in all_campaigns if c.needs_budget_alert]
