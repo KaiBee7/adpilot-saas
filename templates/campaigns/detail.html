@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block title %}{{ campaign.name }}{% endblock %}
+
+{% block content %}
+
+{% set status_colors = {
+  'pending_approval': ('warning', '⏳', 'Wartet auf Freigabe'),
+  'active':           ('success', '✅', 'Aktiv'),
+  'paused':           ('gray',    '⏸️', 'Pausiert'),
+  'completed':        ('primary', '✔️', 'Abgeschlossen'),
+  'rejected':         ('danger',  '❌', 'Abgelehnt'),
+} %}
+{% set sc = status_colors.get(campaign.status, ('gray', '❓', campaign.status)) %}
+
+<div class="page-header">
+  <div>
+    <a href="{{ url_for('campaigns.list_campaigns') }}"
+       style="font-size:13px;color:var(--gray-500);text-decoration:none;display:block;margin-bottom:6px">
+      ← Zurück zu Kampagnen
+    </a>
+    <h1 style="font-size:20px;line-height:1.4">{{ campaign.name }}</h1>
+    <div style="margin-top:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span class="badge badge-{{ sc[0] }}">{{ sc[1] }} {{ sc[2] }}</span>
+      {% if campaign.campaign_type == 'single_job' %}
+        <span class="badge" style="background:#EEF2FF;color:var(--primary)">📋 Einzelstelle</span>
+      {% else %}
+        <span class="badge" style="background:#FEF3C7;color:#92400E">📍 Standort-Dauerläufer</span>
+      {% endif %}
+      <span style="font-size:13px;color:var(--gray-500)">
+        Erstellt {{ campaign.created_at.strftime('%d.%m.%Y') }}
+        {% if campaign.creator %} von {{ campaign.creator.full_name }}{% endif %}
+      </span>
+    </div>
+  </div>
+
+  {% if current_user.is_admin %}
+  <div style="display:flex;gap:10px">
+    {% if campaign.status == 'pending_approval' %}
+    <form method="POST" action="{{ url_for('campaigns.approve', campaign_id=campaign.id) }}">
+      <button type="submit" class="btn btn-success"
+              onclick="return confirm('Kampagne freigeben und in Ads-Plattformen aktivieren?')">
+        ✅ Freigeben
+      </button>
+    </form>
+    {% endif %}
+    {% if campaign.status == 'active' %}
+    <form method="POST" action="{{ url_for('campaigns.pause', campaign_id=campaign.id) }}">
+      <button type="submit" class="btn btn-secondary"
+              onclick="return confirm('Kampagne pausieren?')">
+        ⏸️ Pausieren
+      </button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- ── KPI-Karten ──────────────────────────────────────────────────── -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
+
+  <div class="kpi-card">
+    <div class="kpi-label">AUSGABEN GESAMT</div>
+    <div class="kpi-value">{{ "%.0f"|format(campaign.total_spend) }} €</div>
+    <div class="kpi-sub">Budget: {{ "%.0f"|format(campaign.total_budget) }} €</div>
+    {% if campaign.total_budget > 0 %}
+    {% set pct = [(campaign.total_spend / campaign.total_budget * 100), 100]|min|int %}
+    <div class="progress-bar-wrap" style="margin-top:10px">
+      <div class="progress-bar-fill {% if pct >= 80 %}danger{% endif %}"
+           style="width:{{ pct }}%"></div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-label">CONVERSIONS</div>
+    <div class="kpi-value">{{ campaign.conversions_count }}</div>
+    {% if campaign.conversion_limit %}
+    <div class="kpi-sub">Limit: {{ campaign.conversion_limit }} → Auto-Pause</div>
+    {% else %}
+    <div class="kpi-sub">Kein Limit gesetzt</div>
+    {% endif %}
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-label">KLICKS</div>
+    <div class="kpi-value">{{ campaign.clicks or 0 }}</div>
+    <div class="kpi-sub">
+      {% if campaign.clicks and campaign.conversions_count %}
+        CVR: {{ "%.1f"|format(campaign.conversions_count / campaign.clicks * 100) }}%
+      {% else %}
+        –
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-label">PLATTFORM</div>
+    <div class="kpi-value" style="font-size:24px">
+      {% if campaign.platform in ('google', 'both') %}🔵{% endif %}
+      {% if campaign.platform in ('microsoft', 'both') %}🟣{% endif %}
+    </div>
+    <div class="kpi-sub">
+      {% if campaign.platform == 'both' %}Google + Microsoft
+      {% elif campaign.platform == 'google' %}Nur Google Ads
+      {% else %}Nur Microsoft Ads{% endif %}
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Details ─────────────────────────────────────────────────────── -->
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:24px">
+
+  <!-- Links: Kampagnen-Details -->
+  <div>
+
+    <!-- Stellenanzeige -->
+    {% if campaign.campaign_type == 'single_job' %}
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header"><span>📋 Stellenanzeige</span></div>
+      <div class="card-body">
+        <table class="detail-table">
+          <tr><td>Jobtitel</td><td><strong>{{ campaign.job_title or '–' }}</strong></td></tr>
+          <tr><td>Ort</td><td>{{ campaign.location or '–' }}</td></tr>
+          <tr><td>Stellen-ID</td><td>{{ campaign.job_id or '–' }}</td></tr>
+          <tr><td>URL</td><td>
+            {% if campaign.job_url %}
+            <a href="{{ campaign.job_url }}" target="_blank" style="color:var(--primary)">
+              {{ campaign.job_url|truncate(60) }} ↗
+            </a>
+            {% else %}–{% endif %}
+          </td></tr>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Cluster (Standort-Kampagne) -->
+    {% if campaign.campaign_type == 'standort' and campaign.clusters %}
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header"><span>📍 Branchen-Cluster</span></div>
+      <div class="card-body">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Cluster</th>
+              <th>Budget</th>
+              <th>Conversions</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for cluster in campaign.clusters %}
+            <tr>
+              <td><strong>{{ cluster.cluster_label }}</strong></td>
+              <td>{{ "%.0f"|format(cluster.budget_monthly or 0) }} €/Monat</td>
+              <td>{{ cluster.conversions_count or 0 }}
+                {% if cluster.conversion_limit %} / {{ cluster.conversion_limit }}{% endif %}
+              </td>
+              <td>
+                <span class="badge badge-{{ 'success' if cluster.is_active else 'gray' }}">
+                  {{ 'Aktiv' if cluster.is_active else 'Pausiert' }}
+                </span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Ads-Platform-IDs -->
+    {% if campaign.google_campaign_id or campaign.microsoft_campaign_id %}
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header"><span>🔗 Plattform-Verknüpfungen</span></div>
+      <div class="card-body">
+        <table class="detail-table">
+          {% if campaign.google_campaign_id %}
+          <tr>
+            <td>🔵 Google Ads Campaign ID</td>
+            <td><code>{{ campaign.google_campaign_id }}</code></td>
+          </tr>
+          {% endif %}
+          {% if campaign.microsoft_campaign_id %}
+          <tr>
+            <td>🟣 Microsoft Ads Campaign ID</td>
+            <td><code>{{ campaign.microsoft_campaign_id }}</code></td>
+          </tr>
+          {% endif %}
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- Rechts: Infos & Zeitleiste -->
+  <div>
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header"><span>ℹ️ Kampagnen-Info</span></div>
+      <div class="card-body">
+        <table class="detail-table">
+          <tr><td>Niederlassung</td><td><strong>{{ campaign.niederlassung.name }}</strong></td></tr>
+          <tr><td>Kostenstelle</td>
+              <td><span class="badge">KST-{{ campaign.kostenstelle }}</span></td></tr>
+          <tr><td>Google Budget</td>
+              <td>{{ "%.0f"|format(campaign.budget_google or 0) }} €</td></tr>
+          <tr><td>Microsoft Budget</td>
+              <td>{{ "%.0f"|format(campaign.budget_microsoft or 0) }} €</td></tr>
+          {% if campaign.conversion_limit %}
+          <tr><td>Conv.-Limit</td>
+              <td>{{ campaign.conversion_limit }} (Auto-Pause)</td></tr>
+          {% endif %}
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span>📅 Zeitleiste</span></div>
+      <div class="card-body">
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div>
+              <div style="font-weight:600;font-size:13px">Erstellt</div>
+              <div style="font-size:12px;color:var(--gray-500)">
+                {{ campaign.created_at.strftime('%d.%m.%Y %H:%M') }}
+              </div>
+            </div>
+          </div>
+          {% if campaign.approved_at %}
+          <div class="timeline-item">
+            <div class="timeline-dot success"></div>
+            <div>
+              <div style="font-weight:600;font-size:13px">Freigegeben</div>
+              <div style="font-size:12px;color:var(--gray-500)">
+                {{ campaign.approved_at.strftime('%d.%m.%Y %H:%M') }}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          {% if campaign.paused_at %}
+          <div class="timeline-item">
+            <div class="timeline-dot warning"></div>
+            <div>
+              <div style="font-weight:600;font-size:13px">Pausiert</div>
+              <div style="font-size:12px;color:var(--gray-500)">
+                {{ campaign.paused_at.strftime('%d.%m.%Y %H:%M') }}
+                {% if campaign.pause_reason == 'conversion_limit' %}
+                  <br><em>Conversion-Limit erreicht</em>
+                {% elif campaign.pause_reason == 'budget' %}
+                  <br><em>Budget erschöpft</em>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.detail-table { width:100%; border-collapse:collapse; }
+.detail-table tr td { padding:8px 0; border-bottom:1px solid var(--gray-100); font-size:14px; }
+.detail-table tr td:first-child { color:var(--gray-500); width:45%; }
+.detail-table tr:last-child td { border-bottom:none; }
+
+.timeline { display:flex; flex-direction:column; gap:16px; }
+.timeline-item { display:flex; gap:12px; align-items:flex-start; }
+.timeline-dot {
+  width:10px; height:10px; border-radius:50%;
+  background:var(--gray-300); margin-top:4px; flex-shrink:0;
+}
+.timeline-dot.success { background:var(--success); }
+.timeline-dot.warning { background:var(--warning); }
+
+.btn-success {
+  background: var(--success); color:white; border:none;
+  padding:8px 16px; border-radius:8px; cursor:pointer; font-weight:600;
+}
+.btn-success:hover { opacity:0.9; }
+</style>
+{% endblock %}

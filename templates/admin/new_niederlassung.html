@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Niederlassung anlegen{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <a href="{{ url_for('admin.index') }}"
+       style="font-size:13px;color:var(--gray-500);text-decoration:none;display:block;margin-bottom:6px">
+      ← Zurück zur Verwaltung
+    </a>
+    <h1>Neue Niederlassung anlegen</h1>
+  </div>
+</div>
+
+<div style="max-width:640px">
+<form method="POST">
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header"><span>Stammdaten</span></div>
+    <div class="card-body">
+
+      <div class="form-group">
+        <label class="form-label">Name der Niederlassung <span style="color:var(--danger)">*</span></label>
+        <input type="text" name="name" class="form-control" required
+               placeholder="z.B. Niederlassung Leipzig">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="form-group">
+          <label class="form-label">Kostenstelle (KST) <span style="color:var(--danger)">*</span></label>
+          <input type="text" name="kostenstelle" class="form-control" required
+                 placeholder="z.B. 42">
+          <div style="font-size:12px;color:var(--gray-500);margin-top:4px">
+            Erscheint als [KST-42] in allen Kampagnennamen
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Gruppen-ID (optional)</label>
+          <input type="text" name="group_id" class="form-control"
+                 placeholder="für Reporting-Gruppen">
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="form-group">
+          <label class="form-label">Stadt</label>
+          <input type="text" name="city" class="form-control" placeholder="z.B. Leipzig">
+        </div>
+        <div class="form-group">
+          <label class="form-label">PLZ</label>
+          <input type="text" name="plz" class="form-control" placeholder="z.B. 04109">
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header"><span>Kampagnen-Einstellungen</span></div>
+    <div class="card-body">
+
+      <div class="form-group">
+        <label class="form-label">Standort-URL (für Dauerkampagnen)</label>
+        <input type="url" name="standort_url" class="form-control"
+               placeholder="https://www.hofmann.info/niederlassungen/leipzig">
+        <div style="font-size:12px;color:var(--gray-500);margin-top:4px">
+          Landing Page für Standort-Dauerkampagnen
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Monatliches Budget-Limit (€, optional)</label>
+        <input type="number" name="monthly_budget_limit" class="form-control"
+               placeholder="z.B. 2000" min="0" step="100">
+        <div style="font-size:12px;color:var(--gray-500);margin-top:4px">
+          Bei Überschreitung wird eine Warnung gesendet
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;gap:12px;justify-content:flex-end">
+    <a href="{{ url_for('admin.index') }}" class="btn btn-secondary">Abbrechen</a>
+    <button type="submit" class="btn btn-primary">🏢 Niederlassung anlegen</button>
+  </div>
+
+</form>
+</div>
+{% endblock %}

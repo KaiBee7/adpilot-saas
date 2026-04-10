@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Verwaltung{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Verwaltung</h1>
+    <p style="color:var(--gray-500);margin-top:4px">Niederlassungen, Benutzer und Freigaben</p>
+  </div>
+</div>
+
+<!-- ── Ausstehende Freigaben ──────────────────────────────────────── -->
+{% if pending_campaigns %}
+<div class="alert alert-warning" style="margin-bottom:24px;display:flex;align-items:center;gap:12px">
+  <span style="font-size:24px">⏳</span>
+  <div>
+    <strong>{{ pending_campaigns|length }} Kampagne(n) warten auf Freigabe</strong>
+    {% for c in pending_campaigns %}
+    <div style="margin-top:6px;font-size:14px">
+      <a href="{{ url_for('campaigns.detail', campaign_id=c.id) }}"
+         style="color:inherit;font-weight:600">{{ c.name }}</a>
+      <span style="color:var(--gray-500)"> – {{ c.niederlassung.name }} – {{ c.created_at.strftime('%d.%m.%Y') }}</span>
+      <a href="{{ url_for('campaigns.detail', campaign_id=c.id) }}"
+         class="btn btn-primary" style="margin-left:12px;padding:4px 12px;font-size:12px">
+        Prüfen & Freigeben →
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ── Niederlassungen ─────────────────────────────────────────────── -->
+<div class="card" style="margin-bottom:24px">
+  <div class="card-header">
+    <span>🏢 Niederlassungen</span>
+    <a href="{{ url_for('admin.new_niederlassung') }}" class="btn btn-primary" style="padding:6px 14px;font-size:13px">
+      + Neue Niederlassung
+    </a>
+  </div>
+  <div class="card-body" style="padding:0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Kostenstelle</th>
+          <th>Stadt</th>
+          <th>Budget-Limit</th>
+          <th>Aktive Kampagnen</th>
+          <th>Benutzer</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for nl in niederlassungen %}
+        <tr>
+          <td><strong>{{ nl.name }}</strong></td>
+          <td><span class="badge">KST-{{ nl.kostenstelle }}</span></td>
+          <td>{{ nl.city or '–' }}</td>
+          <td>{{ "%.0f €"|format(nl.monthly_budget_limit) if nl.monthly_budget_limit else 'kein Limit' }}</td>
+          <td>{{ nl.campaigns|selectattr('status','equalto','active')|list|length }}</td>
+          <td>{{ nl.users|length }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:32px">
+          Noch keine Niederlassungen angelegt.
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── Benutzer ───────────────────────────────────────────────────── -->
+<div class="card">
+  <div class="card-header">
+    <span>👤 Benutzer</span>
+    <a href="{{ url_for('admin.new_user') }}" class="btn btn-primary" style="padding:6px 14px;font-size:13px">
+      + Neuen Benutzer anlegen
+    </a>
+  </div>
+  <div class="card-body" style="padding:0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>E-Mail</th>
+          <th>Rolle</th>
+          <th>Niederlassung</th>
+          <th>Status</th>
+          <th>Letzter Login</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set role_labels = {'superadmin':'⚡ Superadmin','admin':'🔑 Admin','branch':'🏢 Niederlassung','viewer':'👁️ Nur Lesen'} %}
+        {% for u in users %}
+        <tr>
+          <td><strong>{{ u.full_name }}</strong></td>
+          <td>{{ u.email }}</td>
+          <td>{{ role_labels.get(u.role, u.role) }}</td>
+          <td>{{ u.niederlassung.name if u.niederlassung else '(alle)' }}</td>
+          <td>
+            <span class="badge badge-{{ 'success' if u.is_active else 'gray' }}">
+              {{ 'Aktiv' if u.is_active else 'Inaktiv' }}
+            </span>
+          </td>
+          <td style="font-size:13px;color:var(--gray-500)">
+            {{ u.last_login.strftime('%d.%m.%Y') if u.last_login else '–' }}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:32px">
+          Noch keine Benutzer angelegt.
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
