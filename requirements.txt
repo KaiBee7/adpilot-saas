@@ -1,0 +1,27 @@
+# AdPilot – Python Dependencies
+
+# Web-Framework & Extensions
+flask>=3.0.0
+gunicorn>=21.0.0             # Produktions-Webserver (für Render/Railway)
+flask-sqlalchemy>=3.1.0      # Datenbank ORM
+flask-login>=0.6.3           # Session & Auth
+flask-wtf>=1.2.0             # CSRF-Schutz
+
+# Datenbank
+# Entwicklung: SQLite (kein Setup nötig)
+# Produktion:  PostgreSQL → psycopg2-binary>=2.9.0
+
+# Google Ads API
+google-ads>=24.0.0
+
+# Microsoft / Bing Ads API
+bingads>=13.0.19
+
+# Web-Scraping
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
+
+# Utility
+python-dotenv>=1.0.0
+werkzeug>=3.0.0              # Passwort-Hashing (kommt mit Flask)

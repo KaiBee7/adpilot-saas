@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – AdPilot{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+{# ── Budget-Alerts ── #}
+{% for c in budget_alerts %}
+<div class="alert alert-warning">
+  ⚠️ <strong>Budget-Alert:</strong>
+  Kampagne „{{ c.name }}" hat {{ c.budget_spent_pct }}% des Budgets verbraucht
+  ({{ c.total_cost | round(2) }} € von {{ c.total_budget | round(2) }} €).
+  <a href="{{ url_for('campaigns.detail', campaign_id=c.id) }}" style="margin-left:0.5rem; font-weight:700;">Anzeigen →</a>
+</div>
+{% endfor %}
+
+{# ── Freigaben ausstehend ── #}
+{% if pending_count > 0 and current_user.is_admin %}
+<div class="alert alert-info">
+  ℹ️ <strong>{{ pending_count }} Kampagne{{ 'n warten' if pending_count > 1 else ' wartet' }} auf Ihre Freigabe.</strong>
+  <a href="{{ url_for('admin.index') }}" style="margin-left:0.5rem; font-weight:700;">Jetzt freigeben →</a>
+</div>
+{% endif %}
+
+{# ── KPI-Kacheln ── #}
+<div class="kpi-grid">
+  <div class="kpi-card good">
+    <div class="kpi-label">Aktive Kampagnen</div>
+    <div class="kpi-value">{{ active_count }}</div>
+    <div class="kpi-sub">Derzeit live</div>
+  </div>
+  <div class="kpi-card {% if pending_count > 0 %}warn{% endif %}">
+    <div class="kpi-label">Warten auf Freigabe</div>
+    <div class="kpi-value">{{ pending_count }}</div>
+    <div class="kpi-sub">Ausstehend</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Gesamtausgaben</div>
+    <div class="kpi-value">{{ total_spend | round(0) | int }} €</div>
+    <div class="kpi-sub">Über alle Kampagnen</div>
+  </div>
+  <div class="kpi-card good">
+    <div class="kpi-label">Conversions gesamt</div>
+    <div class="kpi-value">{{ total_conversions }}</div>
+    <div class="kpi-sub">Bewerbungen / Leads</div>
+  </div>
+</div>
+
+{# ── Niederlassungs-Übersicht (nur für Admins) ── #}
+{% if current_user.is_admin and niederlassungen %}
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">🏢 Niederlassungen</span>
+    <a href="{{ url_for('admin.new_niederlassung') }}" class="btn btn-secondary btn-sm">+ Neue anlegen</a>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Niederlassung</th>
+          <th>Kostenstelle</th>
+          <th>Aktive Kampagnen</th>
+          <th>Ausgaben (Monat)</th>
+          <th>Budget-Limit</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for n in niederlassungen %}
+        <tr>
+          <td><strong>{{ n.name }}</strong><br/><small style="color:#6B7280">{{ n.city }}</small></td>
+          <td><span class="badge badge-kst">KST-{{ n.kostenstelle }}</span></td>
+          <td>{{ n.active_campaigns | length }}</td>
+          <td>{{ n.total_spend_this_month | round(2) }} €</td>
+          <td>
+            {% if n.monthly_budget_limit %}
+              <div style="font-size:0.85rem; margin-bottom:3px;">
+                {{ n.total_spend_this_month | round(0) | int }} / {{ n.monthly_budget_limit | int }} €
+              </div>
+              {% set pct = [(n.total_spend_this_month / n.monthly_budget_limit * 100), 100] | min %}
+              <div class="progress">
+                <div class="progress-fill {% if pct >= 90 %}danger{% elif pct >= 75 %}warn{% endif %}"
+                     style="width: {{ pct }}%"></div>
+              </div>
+            {% else %}
+              <span style="color:#9CA3AF">kein Limit</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ url_for('campaigns.list_campaigns') }}" class="btn btn-secondary btn-sm">Kampagnen</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{# ── Letzte Kampagnen ── #}
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">🚀 Letzte Kampagnen</span>
+    <a href="{{ url_for('campaigns.new_campaign') }}" class="btn btn-primary btn-sm">+ Neue Kampagne</a>
+  </div>
+  {% if recent_campaigns %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Kampagnenname</th>
+          <th>Typ</th>
+          <th>Plattform</th>
+          <th>Budget</th>
+          <th>Ausgaben</th>
+          <th>Conv.</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in recent_campaigns %}
+        <tr>
+          <td>
+            <strong style="font-size:0.875rem;">{{ c.name }}</strong><br/>
+            <small style="color:#6B7280">{{ c.created_at.strftime('%d.%m.%Y') }}</small>
+          </td>
+          <td>
+            {% if c.campaign_type == 'standort' %}
+              <span style="font-size:0.8rem;">📍 Standort</span>
+            {% else %}
+              <span style="font-size:0.8rem;">📋 Einzelstelle</span>
+            {% endif %}
+          </td>
+          <td style="font-size:0.85rem;">
+            {% if c.platform == 'both' %}🔵🟣
+            {% elif c.platform == 'google' %}🔵 Google
+            {% else %}🟣 Microsoft{% endif %}
+          </td>
+          <td>{{ c.total_budget | round(0) | int }} €</td>
+          <td>
+            <span>{{ c.total_cost | round(2) }} €</span><br/>
+            <div class="progress" style="width:80px; margin-top:3px;">
+              <div class="progress-fill {% if c.budget_spent_pct >= 90 %}danger{% elif c.budget_spent_pct >= 75 %}warn{% endif %}"
+                   style="width:{{ c.budget_spent_pct }}%"></div>
+            </div>
+          </td>
+          <td>
+            {{ c.conversions }}
+            {% if c.conversion_limit %}
+              / {{ c.conversion_limit }}
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge badge-{{ c.status }}">
+              {{ {'active':'Aktiv','pending_approval':'Freigabe','paused':'Pausiert',
+                  'draft':'Entwurf','completed':'Fertig','rejected':'Abgelehnt'}
+                 .get(c.status, c.status) }}
+            </span>
+          </td>
+          <td>
+            <a href="{{ url_for('campaigns.detail', campaign_id=c.id) }}"
+               class="btn btn-secondary btn-sm">Details</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align:center; padding:2rem; color:#6B7280;">
+    <div style="font-size:2.5rem; margin-bottom:0.5rem;">🚀</div>
+    <p>Noch keine Kampagnen. <a href="{{ url_for('campaigns.new_campaign') }}">Erste Kampagne erstellen →</a></p>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hofmann SEA Automation</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f4f6f9;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    /* ---- Header ---- */
+    header {
+      background: #003087; /* Hofmann Blau */
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    header h1 { font-size: 1.3rem; font-weight: 600; }
+    header span { font-size: 0.85rem; opacity: 0.75; margin-top: 2px; }
+    .logo { font-size: 2rem; }
+
+    /* ---- Layout ---- */
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    /* ---- Cards ---- */
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.75rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #003087;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card h2 .icon { font-size: 1.2rem; }
+
+    /* ---- Tabs ---- */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 0;
+    }
+    .tab-btn {
+      padding: 0.5rem 1.25rem;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: #6b7280;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      color: #003087;
+      border-bottom-color: #003087;
+      font-weight: 600;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ---- Forms ---- */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .form-group.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #374151;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    label .required { color: #e53e3e; margin-left: 2px; }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="url"],
+    textarea {
+      padding: 0.6rem 0.85rem;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+      font-family: inherit;
+      color: #1a1a2e;
+      background: #fafafa;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #003087;
+      background: white;
+    }
+    textarea { resize: vertical; min-height: 120px; }
+
+    /* ---- Parse Button ---- */
+    .parse-area {
+      display: flex;
+      gap: 0.75rem;
+      flex-direction: column;
+    }
+    .btn-parse {
+      align-self: flex-start;
+      padding: 0.5rem 1.25rem;
+      background: #e8eef7;
+      color: #003087;
+      border: 1.5px solid #003087;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .btn-parse:hover { background: #003087; color: white; }
+
+    /* ---- Platform Toggle ---- */
+    .platform-toggle {
+      display: flex;
+      gap: 1rem;
+    }
+    .platform-option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .platform-option input[type="checkbox"] { display: none; }
+    .platform-option.checked {
+      border-color: #003087;
+      background: #e8eef7;
+    }
+    .platform-option .platform-icon { font-size: 1.3rem; }
+    .platform-option .platform-name { font-size: 0.9rem; font-weight: 600; color: #374151; }
+    .platform-option.checked .platform-name { color: #003087; }
+
+    /* ---- Submit Button ---- */
+    .btn-submit {
+      width: 100%;
+      padding: 0.85rem;
+      background: #003087;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .btn-submit:hover { background: #00205a; }
+    .btn-submit:disabled { background: #9ca3af; cursor: not-allowed; }
+
+    /* ---- Result Panel ---- */
+    #result-panel {
+      display: none;
+    }
+    .result-platform {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 0.75rem;
+    }
+    .result-platform.success { background: #f0fdf4; border: 1.5px solid #86efac; }
+    .result-platform.error   { background: #fef2f2; border: 1.5px solid #fca5a5; }
+    .result-platform.pending { background: #f8fafc; border: 1.5px solid #e2e8f0; }
+    .result-icon { font-size: 1.6rem; }
+    .result-details h3 { font-size: 0.95rem; font-weight: 700; }
+    .result-details p  { font-size: 0.85rem; color: #6b7280; margin-top: 0.2rem; }
+    .result-details .meta {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;
+    }
+    .badge {
+      background: #e8eef7; color: #003087;
+      padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.78rem; font-weight: 600;
+    }
+
+    /* Keywords Preview */
+    .kw-list {
+      display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem;
+    }
+    .kw-tag {
+      padding: 0.2rem 0.6rem; border-radius: 5px; font-size: 0.78rem;
+    }
+    .kw-broad   { background: #fef9c3; color: #854d0e; }
+    .kw-phrase  { background: #dbeafe; color: #1e40af; }
+    .kw-exact   { background: #dcfce7; color: #166534; }
+
+    /* Loading Spinner */
+    .spinner {
+      display: inline-block; width: 18px; height: 18px;
+      border: 3px solid rgba(255,255,255,0.4);
+      border-top-color: white; border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hint {
+      font-size: 0.8rem; color: #9ca3af; margin-top: 0.4rem;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .platform-toggle { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🎯</div>
+  <div>
+    <h1>Hofmann SEA Automation</h1>
+    <span>Kampagnen automatisch aus Stellenanzeigen erstellen</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- Schritt 1: Job-Daten eingeben -->
+  <div class="card">
+    <h2><span class="icon">📋</span> Job-Daten eingeben</h2>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('email')">📧 E-Mail einfügen</button>
+      <button class="tab-btn" onclick="switchTab('manual')">✏️ Manuell eingeben</button>
+    </div>
+
+    <!-- Tab: E-Mail einfügen -->
+    <div id="tab-email" class="tab-content active">
+      <div class="parse-area">
+        <div class="form-group">
+          <label>SEA-Beauftragungsmail einfügen</label>
+          <textarea id="email-input"
+            placeholder="Hier den kompletten E-Mail-Text einfügen:&#10;&#10;========== &#10;Job-Titel: Recruiter (m/w/d)&#10;Job-Url: https://www.hofmann.info/jobs/...&#10;Niederlassung / GruppenID: 2129&#10;Einsatzort: 15890 Eisenhüttenstadt&#10;Kostenstelle: 180&#10;SMA Budget: 250,- €&#10;Job-ID: 898874&#10;=========="
+            style="min-height: 160px;"
+          ></textarea>
+        </div>
+        <button class="btn-parse" onclick="parseEmail()">⚡ Automatisch auslesen</button>
+      </div>
+    </div>
+
+    <!-- Tab: Manuell -->
+    <div id="tab-manual" class="tab-content">
+      <div class="hint" style="margin-bottom: 1rem;">
+        Felder direkt ausfüllen – oder erst die E-Mail einfügen (Tab links) und dann hier ggf. anpassen.
+      </div>
+    </div>
+
+    <!-- Gemeinsames Formular (beide Tabs) -->
+    <div id="job-form" style="margin-top: 1rem;">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Job-Titel <span class="required">*</span></label>
+          <input type="text" id="job_title" placeholder="z.B. Recruiter (m/w/d)" />
+        </div>
+        <div class="form-group full">
+          <label>Stellenanzeigen-URL <span class="required">*</span></label>
+          <input type="url" id="job_url" placeholder="https://www.hofmann.info/jobs/stellenanzeige/..." />
+        </div>
+        <div class="form-group">
+          <label>Einsatzort <span class="required">*</span></label>
+          <input type="text" id="location" placeholder="z.B. 15890 Eisenhüttenstadt" />
+        </div>
+        <div class="form-group">
+          <label>Niederlassung / GruppenID <span class="required">*</span></label>
+          <input type="text" id="group_id" placeholder="z.B. 2129" />
+        </div>
+        <div class="form-group">
+          <label>Kostenstelle <span class="required">*</span></label>
+          <input type="text" id="kostenstelle" placeholder="z.B. 180" />
+          <div class="hint">Wird als Label in den Kampagnen gesetzt – wichtig für die Abrechnung!</div>
+        </div>
+        <div class="form-group">
+          <label>Budget (€, gesamt) <span class="required">*</span></label>
+          <input type="number" id="budget" placeholder="z.B. 250" min="1" step="1" />
+        </div>
+        <div class="form-group">
+          <label>Job-ID</label>
+          <input type="text" id="job_id" placeholder="z.B. 898874" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schritt 2: Plattformen wählen -->
+  <div class="card">
+    <h2><span class="icon">🌐</span> Plattformen</h2>
+    <div class="platform-toggle">
+      <label class="platform-option checked" id="toggle-google" onclick="togglePlatform('google')">
+        <input type="checkbox" id="platform-google" checked />
+        <span class="platform-icon">🔵</span>
+        <span class="platform-name">Google Ads</span>
+      </label>
+      <label class="platform-option checked" id="toggle-microsoft" onclick="togglePlatform('microsoft')">
+        <input type="checkbox" id="platform-microsoft" checked />
+        <span class="platform-icon">🟣</span>
+        <span class="platform-name">Microsoft Ads</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Submit -->
+  <div class="card">
+    <button class="btn-submit" id="submit-btn" onclick="createCampaigns()">
+      🚀 Kampagnen jetzt erstellen
+    </button>
+  </div>
+
+  <!-- Ergebnis -->
+  <div class="card" id="result-panel">
+    <h2><span class="icon">✅</span> Ergebnis</h2>
+    <div id="result-content"></div>
+  </div>
+
+</main>
+
+<script>
+  // ---- Tab-Switching ----
+  function switchTab(tab) {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+    document.getElementById("tab-" + tab).classList.add("active");
+    event.target.classList.add("active");
+  }
+
+  // ---- Plattform-Toggle ----
+  function togglePlatform(platform) {
+    const toggle = document.getElementById("toggle-" + platform);
+    const checkbox = document.getElementById("platform-" + platform);
+    const isChecked = !checkbox.checked;
+    checkbox.checked = isChecked;
+    toggle.classList.toggle("checked", isChecked);
+  }
+
+  // ---- E-Mail parsen ----
+  async function parseEmail() {
+    const emailText = document.getElementById("email-input").value;
+    if (!emailText.trim()) {
+      alert("Bitte zuerst den E-Mail-Text einfügen.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/parse-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email_text: emailText }),
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        fillForm(result.data);
+        // Zum manuellen Tab wechseln, um die Felder zu zeigen
+        document.querySelectorAll(".tab-btn")[1].click();
+        showInfo("✅ Felder erfolgreich ausgelesen – bitte prüfen und ggf. anpassen.");
+      } else {
+        showError("Fehler beim Parsen: " + result.error);
+      }
+    } catch (err) {
+      showError("Netzwerkfehler: " + err.message);
+    }
+  }
+
+  function fillForm(data) {
+    const fieldMap = {
+      job_title:   "job_title",
+      job_url:     "job_url",
+      location:    "location",
+      group_id:    "group_id",
+      kostenstelle:"kostenstelle",
+      budget:      "budget",
+      job_id:      "job_id",
+    };
+    for (const [dataKey, fieldId] of Object.entries(fieldMap)) {
+      const el = document.getElementById(fieldId);
+      if (el && data[dataKey]) {
+        el.value = data[dataKey];
+      }
+    }
+  }
+
+  // ---- Kampagnen erstellen ----
+  async function createCampaigns() {
+    const required = ["job_title", "job_url", "location", "group_id", "kostenstelle", "budget"];
+    for (const id of required) {
+      if (!document.getElementById(id).value.trim()) {
+        alert(`Bitte das Feld "${id.replace("_", " ")}" ausfüllen.`);
+        return;
+      }
+    }
+
+    const platforms = [];
+    if (document.getElementById("platform-google").checked) platforms.push("google");
+    if (document.getElementById("platform-microsoft").checked) platforms.push("microsoft");
+    if (platforms.length === 0) {
+      alert("Bitte mindestens eine Plattform auswählen.");
+      return;
+    }
+
+    const payload = {
+      job_title:    document.getElementById("job_title").value.trim(),
+      job_url:      document.getElementById("job_url").value.trim(),
+      location:     document.getElementById("location").value.trim(),
+      group_id:     document.getElementById("group_id").value.trim(),
+      kostenstelle: document.getElementById("kostenstelle").value.trim(),
+      budget:       document.getElementById("budget").value.trim(),
+      job_id:       document.getElementById("job_id").value.trim(),
+      platforms:    platforms,
+    };
+
+    // Button deaktivieren
+    const btn = document.getElementById("submit-btn");
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Kampagnen werden erstellt…';
+
+    try {
+      const response = await fetch("/create-campaigns", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+      renderResult(result);
+    } catch (err) {
+      showError("Fehler bei der Anfrage: " + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = "🚀 Kampagnen jetzt erstellen";
+    }
+  }
+
+  // ---- Ergebnis rendern ----
+  function renderResult(result) {
+    const panel = document.getElementById("result-panel");
+    const content = document.getElementById("result-content");
+    panel.style.display = "block";
+    panel.scrollIntoView({ behavior: "smooth" });
+
+    let html = "";
+
+    // Kampagnenname
+    if (result.campaign_name) {
+      html += `<div style="margin-bottom:1rem; padding: 0.75rem 1rem; background: #f8fafc; border-radius:8px; font-family: monospace; font-size: 0.9rem; color: #003087;">
+        📌 Kampagnenname: <strong>${escHtml(result.campaign_name)}</strong>
+      </div>`;
+    }
+
+    // Google Ads
+    html += renderPlatformResult("Google Ads", "🔵", result.google_ads);
+    // Microsoft Ads
+    html += renderPlatformResult("Microsoft Ads", "🟣", result.microsoft_ads);
+
+    // Fehler
+    if (result.errors && result.errors.length > 0) {
+      html += `<div style="margin-top:0.75rem; padding:0.75rem; background:#fef2f2; border-radius:8px; color:#991b1b; font-size:0.85rem;">
+        ⚠️ <strong>Hinweise:</strong><br>${result.errors.map(escHtml).join("<br>")}
+      </div>`;
+    }
+
+    // Keywords Preview
+    if (result.keywords) {
+      html += `<div style="margin-top:1rem;">
+        <div style="font-size:0.8rem; font-weight:700; color:#374151; margin-bottom:0.5rem;">KEYWORDS</div>
+        <div class="kw-list">`;
+      (result.keywords.exact_match || []).forEach(k =>
+        html += `<span class="kw-tag kw-exact">${escHtml(k)}</span>`);
+      (result.keywords.phrase_match || []).forEach(k =>
+        html += `<span class="kw-tag kw-phrase">${escHtml(k)}</span>`);
+      (result.keywords.broad_match || []).slice(0, 8).forEach(k =>
+        html += `<span class="kw-tag kw-broad">${escHtml(k)}</span>`);
+      html += `</div>
+        <div style="font-size:0.75rem; color:#9ca3af; margin-top:0.4rem;">
+          <span style="color:#166534">■</span> Exact
+          <span style="color:#1e40af; margin-left:0.5rem">■</span> Phrase
+          <span style="color:#854d0e; margin-left:0.5rem">■</span> Broad
+        </div>
+      </div>`;
+    }
+
+    content.innerHTML = html;
+  }
+
+  function renderPlatformResult(name, icon, data) {
+    if (!data) {
+      return `<div class="result-platform pending">
+        <div class="result-icon">⏭️</div>
+        <div class="result-details">
+          <h3>${name}</h3>
+          <p>Nicht ausgeführt oder fehlgeschlagen</p>
+        </div>
+      </div>`;
+    }
+
+    const isSuccess = data.status === "created";
+    return `<div class="result-platform ${isSuccess ? "success" : "error"}">
+      <div class="result-icon">${isSuccess ? "✅" : "❌"}</div>
+      <div class="result-details">
+        <h3>${icon} ${name}: ${isSuccess ? "Kampagne erstellt" : "Fehler"}</h3>
+        ${data.error ? `<p style="color:#991b1b">${escHtml(data.error)}</p>` : ""}
+        <div class="meta">
+          ${data.campaign_id ? `<span class="badge">ID: ${escHtml(data.campaign_id)}</span>` : ""}
+          ${data.budget_eur ? `<span class="badge">Budget: ${data.budget_eur} €</span>` : ""}
+          ${data.keywords_added ? `<span class="badge">${data.keywords_added} Keywords</span>` : ""}
+          ${data.kostenstelle ? `<span class="badge">KST-${escHtml(data.kostenstelle)}</span>` : ""}
+        </div>
+        ${isSuccess ? '<p style="margin-top:0.4rem; color:#166534;">Status: PAUSED – bitte in der Ads-Oberfläche prüfen und aktivieren.</p>' : ""}
+      </div>
+    </div>`;
+  }
+
+  // ---- Hilfsfunktionen ----
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function showError(msg) {
+    alert("❌ " + msg);
+  }
+
+  function showInfo(msg) {
+    const div = document.createElement("div");
+    div.style.cssText = "position:fixed;top:1rem;right:1rem;background:#003087;color:white;padding:0.75rem 1.25rem;border-radius:8px;font-size:0.9rem;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.2)";
+    div.textContent = msg;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 4000);
+  }
+</script>
+
+</body>
+</html>

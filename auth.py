@@ -1,0 +1,160 @@
+"""
+AdPilot – Authentifizierung & Autorisierung
+============================================
+Login, Logout, Passwort-Reset, Rollen-Checks.
+
+Rollen-Hierarchie:
+  superadmin → admin → viewer
+                    → branch (sieht nur eigene Niederlassung)
+
+Mandanten-Isolation:
+  Jede Datenbankabfrage filtert automatisch nach mandant_id des
+  eingeloggten Users. Ein User kann NIEMALS Daten eines anderen
+  Mandanten sehen – auch nicht durch URL-Manipulation.
+"""
+
+from functools import wraps
+from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
+from flask_login import login_user, logout_user, login_required, current_user
+from models import db, User, Mandant
+from datetime import datetime
+
+auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
+
+
+# ── Rollen-Dekoratoren ────────────────────────────────────────────────────
+
+def admin_required(f):
+    """Nur Admins und Superadmins dürfen diese Route aufrufen."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated
+
+
+def superadmin_required(f):
+    """Nur AdPilot-interne Superadmins."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_superadmin:
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated
+
+
+def branch_access_required(f):
+    """
+    Stellt sicher dass der User nur auf Daten seiner eigenen
+    Niederlassung zugreifen kann. Admins dürfen alles.
+    """
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        niederlassung_id = kwargs.get("niederlassung_id")
+        if niederlassung_id and not current_user.can_see_niederlassung(niederlassung_id):
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated
+
+
+def same_mandant_required(f):
+    """
+    Kritische Mandanten-Isolation: Prüft ob die angeforderte
+    Ressource zum Mandanten des eingeloggten Users gehört.
+    """
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        # mandant_id aus URL oder kwargs
+        mandant_id = kwargs.get("mandant_id") or request.view_args.get("mandant_id")
+        if mandant_id and not current_user.is_superadmin:
+            if int(mandant_id) != current_user.mandant_id:
+                abort(403)
+        return f(*args, **kwargs)
+    return decorated
+
+
+# ── Login ─────────────────────────────────────────────────────────────────
+
+@auth_bp.route("/login", methods=["GET", "POST"])
+def login():
+    from flask_login import current_user
+    if current_user.is_authenticated:
+        return redirect(url_for("dashboard.index"))
+
+    if request.method == "POST":
+        email    = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+        remember = bool(request.form.get("remember"))
+
+        user = User.query.filter_by(email=email).first()
+
+        if not user or not user.check_password(password):
+            flash("E-Mail oder Passwort falsch.", "error")
+            return render_template("auth/login.html")
+
+        if not user.is_active:
+            flash("Ihr Account ist deaktiviert. Bitte wenden Sie sich an den Administrator.", "error")
+            return render_template("auth/login.html")
+
+        if not user.mandant.is_active:
+            flash("Ihr Unternehmen ist nicht aktiv. Bitte kontaktieren Sie AdPilot.", "error")
+            return render_template("auth/login.html")
+
+        login_user(user, remember=remember)
+        user.last_login = datetime.utcnow()
+        db.session.commit()
+
+        next_page = request.args.get("next")
+        return redirect(next_page or url_for("dashboard.index"))
+
+    return render_template("auth/login.html")
+
+
+@auth_bp.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash("Sie wurden erfolgreich abgemeldet.", "info")
+    return redirect(url_for("auth.login"))
+
+
+# ── Passwort ändern ───────────────────────────────────────────────────────
+
+@auth_bp.route("/change-password", methods=["GET", "POST"])
+@login_required
+def change_password():
+    if request.method == "POST":
+        current_pw  = request.form.get("current_password", "")
+        new_pw      = request.form.get("new_password", "")
+        confirm_pw  = request.form.get("confirm_password", "")
+
+        if not current_user.check_password(current_pw):
+            flash("Aktuelles Passwort ist falsch.", "error")
+        elif len(new_pw) < 8:
+            flash("Neues Passwort muss mindestens 8 Zeichen lang sein.", "error")
+        elif new_pw != confirm_pw:
+            flash("Passwörter stimmen nicht überein.", "error")
+        else:
+            current_user.set_password(new_pw)
+            db.session.commit()
+            flash("Passwort erfolgreich geändert.", "success")
+            return redirect(url_for("dashboard.index"))
+
+    return render_template("auth/change_password.html")
+
+
+# ── Fehlerseiten ──────────────────────────────────────────────────────────
+
+def register_error_handlers(app):
+    @app.errorhandler(403)
+    def forbidden(e):
+        return render_template("errors/403.html"), 403
+
+    @app.errorhandler(404)
+    def not_found(e):
+        return render_template("errors/404.html"), 404
+
+    @app.errorhandler(500)
+    def server_error(e):
+        return render_template("errors/500.html"), 500

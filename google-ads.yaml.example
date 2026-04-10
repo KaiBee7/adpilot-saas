@@ -1,0 +1,10 @@
+# google-ads.yaml – Alternativ zur .env Datei
+# Umbenennen zu google-ads.yaml und Werte eintragen.
+# NIEMALS in Git einchecken!
+
+developer_token: DEIN_DEVELOPER_TOKEN
+client_id: DEINE_CLIENT_ID.apps.googleusercontent.com
+client_secret: DEIN_CLIENT_SECRET
+refresh_token: DEIN_REFRESH_TOKEN
+login_customer_id: "1234567890"  # MCC ID (in Anführungszeichen!)
+use_proto_plus: True
