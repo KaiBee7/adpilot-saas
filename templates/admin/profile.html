@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Mein Profil – Adynex{% endblock %}
+{% block page_title %}Mein Profil{% endblock %}
+
+{% block content %}
+<div style="max-width:560px">
+
+<!-- ── Name ──────────────────────────────────────────────────────── -->
+<div class="card" style="margin-bottom:24px">
+  <div class="card-header"><span class="card-title">👤 Profil</span></div>
+  <div class="card-body">
+    <form method="POST">
+      <input type="hidden" name="action" value="name">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+        <div>
+          <label class="form-label">Vorname</label>
+          <input type="text" name="first_name" class="form-control" value="{{ current_user.first_name or '' }}">
+        </div>
+        <div>
+          <label class="form-label">Nachname</label>
+          <input type="text" name="last_name" class="form-control" value="{{ current_user.last_name or '' }}">
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <label class="form-label">E-Mail</label>
+        <input type="text" class="form-control" value="{{ current_user.email }}" disabled
+               style="background:#F9FAFB;color:#6B7280">
+        <div style="font-size:12px;color:#9CA3AF;margin-top:4px">E-Mail kann nicht geändert werden.</div>
+      </div>
+      <div style="margin-bottom:16px">
+        <label class="form-label">Rolle</label>
+        <input type="text" class="form-control" value="{{ {'admin':'Admin','branch':'Niederlassung','viewer':'Nur Lesen','superadmin':'Super-Admin'}.get(current_user.role, current_user.role) }}" disabled
+               style="background:#F9FAFB;color:#6B7280">
+      </div>
+      <button type="submit" class="btn btn-primary">💾 Name speichern</button>
+    </form>
+  </div>
+</div>
+
+<!-- ── Passwort ───────────────────────────────────────────────────── -->
+<div class="card">
+  <div class="card-header"><span class="card-title">🔒 Passwort ändern</span></div>
+  <div class="card-body">
+    <form method="POST">
+      <input type="hidden" name="action" value="password">
+      <div style="margin-bottom:14px">
+        <label class="form-label">Aktuelles Passwort</label>
+        <input type="password" name="old_password" class="form-control" required placeholder="Dein aktuelles Passwort">
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="form-label">Neues Passwort</label>
+        <input type="password" name="new_password" class="form-control" required minlength="8" placeholder="Mindestens 8 Zeichen">
+      </div>
+      <div style="margin-bottom:16px">
+        <label class="form-label">Neues Passwort wiederholen</label>
+        <input type="password" name="new_password2" class="form-control" required placeholder="Wiederholen...">
+      </div>
+      <button type="submit" class="btn btn-primary">🔒 Passwort ändern</button>
+    </form>
+  </div>
+</div>
+
+</div>
+{% endblock %}

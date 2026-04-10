@@ -124,6 +124,10 @@ class User(db.Model, UserMixin):
     notify_budget_alert     = db.Column(db.Boolean, default=True)
     notify_conversion_limit = db.Column(db.Boolean, default=True)
 
+    # Passwort-Reset
+    reset_token         = db.Column(db.String(100), unique=True, nullable=True)
+    reset_token_expires = db.Column(db.DateTime, nullable=True)
+
     def set_password(self, password: str):
         self.password_hash = generate_password_hash(password)
 

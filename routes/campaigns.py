@@ -266,11 +266,53 @@ def approve(campaign_id):
 @admin_required
 def pause(campaign_id):
     campaign = Campaign.query.get_or_404(campaign_id)
-    campaign.status     = Campaign.STATUS_PAUSED
-    campaign.paused_at  = datetime.utcnow()
+    campaign.status       = Campaign.STATUS_PAUSED
+    campaign.paused_at    = datetime.utcnow()
     campaign.pause_reason = "manual"
     db.session.commit()
     flash(f'Kampagne "{campaign.name}" wurde pausiert.', "info")
+    return redirect(url_for("campaigns.detail", campaign_id=campaign_id))
+
+
+@campaigns_bp.route("/<int:campaign_id>/resume", methods=["POST"])
+@login_required
+@admin_required
+def resume(campaign_id):
+    """Pausierte Kampagne wieder aktivieren."""
+    campaign = Campaign.query.get_or_404(campaign_id)
+    if campaign.status != Campaign.STATUS_PAUSED:
+        flash("Nur pausierte Kampagnen können fortgesetzt werden.", "warning")
+        return redirect(url_for("campaigns.detail", campaign_id=campaign_id))
+    campaign.status       = Campaign.STATUS_ACTIVE
+    campaign.pause_reason = None
+    db.session.commit()
+    flash(f'Kampagne "{campaign.name}" läuft wieder.', "success")
+    return redirect(url_for("campaigns.detail", campaign_id=campaign_id))
+
+
+@campaigns_bp.route("/<int:campaign_id>/reject", methods=["POST"])
+@login_required
+@admin_required
+def reject(campaign_id):
+    """Admin lehnt Kampagne ab."""
+    campaign = Campaign.query.get_or_404(campaign_id)
+    reason   = request.form.get("reason", "Kein Grund angegeben")
+    campaign.status       = Campaign.STATUS_REJECTED
+    campaign.pause_reason = reason
+    db.session.commit()
+    flash(f'Kampagne "{campaign.name}" wurde abgelehnt.', "warning")
+    return redirect(url_for("campaigns.detail", campaign_id=campaign_id))
+
+
+@campaigns_bp.route("/<int:campaign_id>/complete", methods=["POST"])
+@login_required
+@admin_required
+def complete(campaign_id):
+    """Kampagne manuell als abgeschlossen markieren."""
+    campaign = Campaign.query.get_or_404(campaign_id)
+    campaign.status = Campaign.STATUS_COMPLETED
+    db.session.commit()
+    flash(f'Kampagne "{campaign.name}" wurde als abgeschlossen markiert.', "info")
     return redirect(url_for("campaigns.detail", campaign_id=campaign_id))
 
 
@@ -301,7 +343,7 @@ Plattform:    {campaign.platform}
 Budget:       {campaign.total_budget:.0f} €
 Erstellt von: {campaign.creator.full_name if campaign.creator else 'Unbekannt'}
 
-Zur Freigabe: http://localhost:5000/campaigns/{campaign.id}
+Zur Freigabe: {os.getenv('APP_URL', 'https://adynex.de')}/campaigns/{campaign.id}
 
 Mit freundlichen Grüßen
 Adynex

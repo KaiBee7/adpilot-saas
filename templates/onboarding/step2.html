@@ -1,0 +1,67 @@
+{% extends "onboarding/base_step.html" %}
+{% block title %}Niederlassung anlegen – Adynex{% endblock %}
+{% block page_title %}Einrichtung{% endblock %}
+
+{% block step_content %}
+<div class="card">
+  <div class="card-body" style="padding:40px">
+    <div style="margin-bottom:28px">
+      <div style="font-size:2rem;margin-bottom:10px">🏢</div>
+      <h2 style="font-size:1.4rem;font-weight:800;color:#111827;margin-bottom:8px">Erste Niederlassung anlegen</h2>
+      <p style="color:#6B7280;line-height:1.6">
+        Jede Niederlassung bekommt eine Kostenstelle (KST). Die KST erscheint in jedem Kampagnennamen und im Reporting.
+      </p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" style="margin-bottom:16px">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="POST">
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px">
+        <div>
+          <label class="form-label">Name der Niederlassung *</label>
+          <input type="text" name="name" class="form-control" required placeholder="z.B. Hamburg Hauptbahnhof">
+        </div>
+        <div>
+          <label class="form-label">Kostenstelle (KST) *</label>
+          <input type="text" name="kostenstelle" class="form-control" required placeholder="z.B. 20">
+          <div style="font-size:11px;color:#9CA3AF;margin-top:3px">Unveränderlich nach Anlage</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div>
+          <label class="form-label">Stadt</label>
+          <input type="text" name="city" class="form-control" placeholder="z.B. Hamburg">
+        </div>
+        <div>
+          <label class="form-label">PLZ</label>
+          <input type="text" name="plz" class="form-control" placeholder="20095">
+        </div>
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="form-label">Standort-URL (für Dauerkampagnen)</label>
+        <input type="url" name="standort_url" class="form-control" placeholder="https://firma.de/standorte/hamburg/">
+        <div style="font-size:12px;color:#9CA3AF;margin-top:4px">Die URL eurer Standortseite – für Dauerkampagnen auf die Niederlassung.</div>
+      </div>
+      <div style="margin-bottom:24px">
+        <label class="form-label">Monats-Budget-Limit (optional)</label>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input type="number" name="monthly_budget_limit" class="form-control" placeholder="z.B. 500" step="0.01" min="0">
+          <span style="color:#6B7280;font-size:0.9rem">€/Monat</span>
+        </div>
+        <div style="font-size:12px;color:#9CA3AF;margin-top:4px">Bei Erreichen des Limits wird gewarnt.</div>
+      </div>
+
+      <div style="display:flex;gap:12px">
+        <a href="{{ url_for('onboarding.step1') }}" class="btn btn-secondary" style="flex:0;padding:12px 24px">← Zurück</a>
+        <button type="submit" class="btn btn-primary" style="flex:1;padding:14px;font-size:1rem">
+          Niederlassung anlegen →
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

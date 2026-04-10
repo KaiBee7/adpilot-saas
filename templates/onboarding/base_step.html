@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Fortschrittsanzeige -->
+<div style="max-width:680px;margin:0 auto">
+  <div style="margin-bottom:32px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:0.85rem;color:#6B7280;font-weight:600">Schritt {{ step }} von {{ total }}</span>
+      <span style="font-size:0.85rem;color:#6B7280">{{ (step / total * 100)|int }}% abgeschlossen</span>
+    </div>
+    <div style="background:#E5E7EB;border-radius:100px;height:8px">
+      <div style="background:#003087;border-radius:100px;height:8px;width:{{ (step / total * 100)|int }}%;transition:width 0.3s"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:8px">
+      {% set steps = ['Willkommen', 'Niederlassung', 'API-Keys', 'Fertig!'] %}
+      {% for s in steps %}
+      <span style="font-size:0.75rem;font-weight:{% if loop.index <= step %}700{% else %}400{% endif %};color:{% if loop.index <= step %}#003087{% else %}#9CA3AF{% endif %}">
+        {{ s }}
+      </span>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% block step_content %}{% endblock %}
+</div>
+{% endblock %}

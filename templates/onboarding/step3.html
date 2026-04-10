@@ -1,0 +1,63 @@
+{% extends "onboarding/base_step.html" %}
+{% block title %}API-Zugangsdaten – Adynex{% endblock %}
+{% block page_title %}Einrichtung{% endblock %}
+
+{% block step_content %}
+<div class="card">
+  <div class="card-body" style="padding:40px">
+    <div style="margin-bottom:28px">
+      <div style="font-size:2rem;margin-bottom:10px">🔑</div>
+      <h2 style="font-size:1.4rem;font-weight:800;color:#111827;margin-bottom:8px">Google Ads verbinden</h2>
+      <p style="color:#6B7280;line-height:1.6">
+        Optional: Verbinde dein Google Ads Konto für vollautomatische Kampagnenerstellung.
+        Du kannst das auch später in den Einstellungen nachholen.
+      </p>
+    </div>
+
+    <div class="alert alert-info" style="margin-bottom:24px;font-size:13px">
+      💡 <strong>Noch keine API-Zugangsdaten?</strong> Kein Problem – klicke auf "Überspringen" und füge sie später
+      unter <strong>Einstellungen → Google Ads</strong> ein.
+    </div>
+
+    <form method="POST">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px">
+        <div>
+          <label class="form-label">Customer-ID</label>
+          <input type="text" name="google_customer_id" class="form-control"
+                 value="{{ mandant.google_customer_id or '' }}" placeholder="123-456-7890">
+        </div>
+        <div>
+          <label class="form-label">Developer Token</label>
+          <input type="password" name="google_developer_token" class="form-control"
+                 value="{{ mandant.google_developer_token or '' }}" placeholder="••••••••">
+        </div>
+        <div>
+          <label class="form-label">OAuth Client ID</label>
+          <input type="text" name="google_client_id" class="form-control"
+                 value="{{ mandant.google_client_id or '' }}" placeholder="...apps.googleusercontent.com">
+        </div>
+        <div>
+          <label class="form-label">OAuth Client Secret</label>
+          <input type="password" name="google_client_secret" class="form-control"
+                 value="{{ mandant.google_client_secret or '' }}" placeholder="GOCSPX-...">
+        </div>
+        <div style="grid-column:1/-1">
+          <label class="form-label">Refresh Token</label>
+          <input type="password" name="google_refresh_token" class="form-control"
+                 value="{{ mandant.google_refresh_token or '' }}" placeholder="1//...">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px">
+        <a href="{{ url_for('onboarding.step2') }}" class="btn btn-secondary" style="padding:12px 24px">← Zurück</a>
+        <button type="submit" name="action" value="skip" class="btn btn-secondary" style="flex:1;padding:12px">
+          Überspringen →
+        </button>
+        <button type="submit" name="action" value="save" class="btn btn-primary" style="flex:1;padding:12px">
+          💾 Speichern & Weiter →
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

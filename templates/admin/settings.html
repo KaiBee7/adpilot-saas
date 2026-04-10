@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Einstellungen – Adynex{% endblock %}
+{% block page_title %}Einstellungen{% endblock %}
+
+{% block content %}
+<div style="max-width:760px">
+
+<!-- ── Allgemein ─────────────────────────────────────────────────── -->
+<div class="card" style="margin-bottom:24px">
+  <div class="card-header"><span class="card-title">🏢 Allgemein</span></div>
+  <div class="card-body">
+    <form method="POST">
+      <input type="hidden" name="section" value="general">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div>
+          <label class="form-label">Firmenname</label>
+          <input type="text" name="name" class="form-control" value="{{ mandant.name }}" required>
+        </div>
+        <div>
+          <label class="form-label">Primärfarbe (Hex)</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="color" name="primary_color" value="{{ mandant.primary_color or '#003087' }}"
+                   style="width:48px;height:38px;padding:2px;border:1px solid #E5E7EB;border-radius:8px;cursor:pointer">
+            <input type="text" id="color_text" value="{{ mandant.primary_color or '#003087' }}"
+                   class="form-control" style="flex:1" readonly>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button type="submit" class="btn btn-primary">💾 Speichern</button>
+        <a href="{{ url_for('admin.index') }}" class="btn btn-secondary">Abbrechen</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Google Ads ────────────────────────────────────────────────── -->
+<div class="card" style="margin-bottom:24px">
+  <div class="card-header">
+    <span class="card-title">🔵 Google Ads Zugangsdaten</span>
+    {% if mandant.google_customer_id %}
+      <span class="badge badge-active" style="font-size:11px">✅ Konfiguriert</span>
+    {% else %}
+      <span class="badge badge-paused" style="font-size:11px">⚠️ Nicht konfiguriert</span>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    <div class="alert alert-info" style="margin-bottom:16px;font-size:13px">
+      ℹ️ Diese Zugangsdaten werden benötigt um Kampagnen automatisch in Google Ads zu erstellen.
+      Du findest sie in der <a href="https://ads.google.com/home/tools/manager-accounts/" target="_blank" style="color:var(--primary)">Google Ads Manager-Konsole</a>.
+    </div>
+    <form method="POST">
+      <input type="hidden" name="section" value="google">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+        <div>
+          <label class="form-label">MCC-ID (Manager-Konto)</label>
+          <input type="text" name="google_mcc_id" class="form-control"
+                 value="{{ mandant.google_mcc_id or '' }}" placeholder="123-456-7890">
+        </div>
+        <div>
+          <label class="form-label">Customer-ID (Kundenkonto)</label>
+          <input type="text" name="google_customer_id" class="form-control"
+                 value="{{ mandant.google_customer_id or '' }}" placeholder="987-654-3210">
+        </div>
+        <div>
+          <label class="form-label">Developer Token</label>
+          <input type="password" name="google_developer_token" class="form-control"
+                 value="{{ mandant.google_developer_token or '' }}" placeholder="••••••••••••">
+        </div>
+        <div>
+          <label class="form-label">OAuth Client ID</label>
+          <input type="text" name="google_client_id" class="form-control"
+                 value="{{ mandant.google_client_id or '' }}" placeholder="...apps.googleusercontent.com">
+        </div>
+        <div>
+          <label class="form-label">OAuth Client Secret</label>
+          <input type="password" name="google_client_secret" class="form-control"
+                 value="{{ mandant.google_client_secret or '' }}" placeholder="GOCSPX-...">
+        </div>
+        <div>
+          <label class="form-label">Refresh Token</label>
+          <input type="password" name="google_refresh_token" class="form-control"
+                 value="{{ mandant.google_refresh_token or '' }}" placeholder="1//...">
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">💾 Google Zugangsdaten speichern</button>
+    </form>
+  </div>
+</div>
+
+<!-- ── Microsoft Ads ─────────────────────────────────────────────── -->
+<div class="card" style="margin-bottom:24px">
+  <div class="card-header">
+    <span class="card-title">🟣 Microsoft Ads Zugangsdaten</span>
+    {% if mandant.microsoft_account_id %}
+      <span class="badge badge-active" style="font-size:11px">✅ Konfiguriert</span>
+    {% else %}
+      <span class="badge badge-paused" style="font-size:11px">⚠️ Nicht konfiguriert</span>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    <div class="alert alert-info" style="margin-bottom:16px;font-size:13px">
+      ℹ️ Diese Zugangsdaten findest du im
+      <a href="https://ui.ads.microsoft.com/" target="_blank" style="color:var(--primary)">Microsoft Advertising Portal</a>
+      unter Einstellungen → API-Zugang.
+    </div>
+    <form method="POST">
+      <input type="hidden" name="section" value="microsoft">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+        <div>
+          <label class="form-label">Customer ID</label>
+          <input type="text" name="microsoft_customer_id" class="form-control"
+                 value="{{ mandant.microsoft_customer_id or '' }}" placeholder="12345678">
+        </div>
+        <div>
+          <label class="form-label">Account ID</label>
+          <input type="text" name="microsoft_account_id" class="form-control"
+                 value="{{ mandant.microsoft_account_id or '' }}" placeholder="87654321">
+        </div>
+        <div>
+          <label class="form-label">Developer Token</label>
+          <input type="password" name="microsoft_developer_token" class="form-control"
+                 value="{{ mandant.microsoft_developer_token or '' }}" placeholder="BBD37VjD...">
+        </div>
+        <div>
+          <label class="form-label">OAuth Client ID</label>
+          <input type="text" name="microsoft_client_id" class="form-control"
+                 value="{{ mandant.microsoft_client_id or '' }}" placeholder="xxxxxxxx-xxxx-...">
+        </div>
+        <div>
+          <label class="form-label">OAuth Client Secret</label>
+          <input type="password" name="microsoft_client_secret" class="form-control"
+                 value="{{ mandant.microsoft_client_secret or '' }}" placeholder="...">
+        </div>
+        <div>
+          <label class="form-label">Refresh Token</label>
+          <input type="password" name="microsoft_refresh_token" class="form-control"
+                 value="{{ mandant.microsoft_refresh_token or '' }}" placeholder="...">
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">💾 Microsoft Zugangsdaten speichern</button>
+    </form>
+  </div>
+</div>
+
+</div>
+
+<script>
+document.querySelector('input[type=color]').addEventListener('input', function() {
+  document.getElementById('color_text').value = this.value;
+});
+</script>
+{% endblock %}

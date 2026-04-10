@@ -1,0 +1,54 @@
+{% extends "onboarding/base_step.html" %}
+{% block title %}Einrichtung abgeschlossen – Adynex{% endblock %}
+{% block page_title %}Einrichtung{% endblock %}
+
+{% block step_content %}
+<div class="card">
+  <div class="card-body" style="padding:48px;text-align:center">
+    <div style="font-size:4rem;margin-bottom:16px">🎉</div>
+    <h2 style="font-size:1.75rem;font-weight:800;color:#111827;margin-bottom:12px">Alles bereit!</h2>
+    <p style="color:#6B7280;max-width:460px;margin:0 auto 32px;line-height:1.7">
+      Dein Adynex-Account ist eingerichtet. Du kannst jetzt deine erste Kampagne erstellen.
+    </p>
+
+    <!-- Zusammenfassung -->
+    <div style="background:#F9FAFB;border-radius:12px;padding:24px;text-align:left;margin-bottom:32px;max-width:400px;margin-left:auto;margin-right:auto">
+      <div style="font-weight:700;color:#111827;margin-bottom:12px">✅ Eingerichtet:</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:0.875rem">
+        <div style="display:flex;align-items:center;gap:8px;color:#374151">
+          <span style="color:#16A34A;font-size:1rem">✓</span>
+          Mandant: <strong>{{ mandant.name }}</strong>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;color:#374151">
+          <span style="color:#16A34A;font-size:1rem">✓</span>
+          {{ niederlassungen|length }} Niederlassung{{ 'en' if niederlassungen|length > 1 else '' }} angelegt
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;color:{% if has_google %}#374151{% else %}#9CA3AF{% endif %}">
+          <span style="color:{% if has_google %}#16A34A{% else %}#D97706{% endif %};font-size:1rem">{% if has_google %}✓{% else %}⚠{% endif %}</span>
+          Google Ads: {% if has_google %}<strong>Verbunden</strong>{% else %}Noch nicht verbunden{% endif %}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;color:{% if has_microsoft %}#374151{% else %}#9CA3AF{% endif %}">
+          <span style="color:{% if has_microsoft %}#16A34A{% else %}#D97706{% endif %};font-size:1rem">{% if has_microsoft %}✓{% else %}⚠{% endif %}</span>
+          Microsoft Ads: {% if has_microsoft %}<strong>Verbunden</strong>{% else %}Noch nicht verbunden{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="{{ url_for('campaigns.new_campaign') }}" class="btn btn-primary" style="padding:14px 32px;font-size:1rem">
+        🚀 Erste Kampagne erstellen
+      </a>
+      <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary" style="padding:14px 32px">
+        Zum Dashboard →
+      </a>
+    </div>
+
+    {% if not has_google and not has_microsoft %}
+    <div style="margin-top:20px;font-size:0.85rem;color:#6B7280">
+      API-Keys fehlen noch?
+      <a href="{{ url_for('admin.settings') }}" style="color:#003087;font-weight:600">Jetzt in Einstellungen hinzufügen →</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

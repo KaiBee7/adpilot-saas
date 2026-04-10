@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adynex – Automatisierte Stellenanzeigen-Kampagnen für Personaldienstleister</title>
+  <meta name="description" content="Adynex automatisiert Google Ads und Microsoft Ads Kampagnen für Personaldienstleister. Mehr Bewerber, weniger Aufwand.">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; color: #111827; background: #fff; }
+    a { text-decoration: none; }
+
+    /* Nav */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);
+      border-bottom: 1px solid #E5E7EB;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 6%; height: 64px;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: 800; color: #003087; }
+    .logo-icon { width: 36px; height: 36px; background: #003087; border-radius: 8px;
+                 display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+    .nav-links { display: flex; align-items: center; gap: 28px; }
+    .nav-links a { color: #374151; font-size: 0.9rem; font-weight: 500; }
+    .nav-links a:hover { color: #003087; }
+    .btn-nav { background: #003087; color: #fff !important; padding: 8px 20px; border-radius: 8px; font-weight: 600 !important; }
+    .btn-nav:hover { background: #1E4D8C !important; }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #003087 0%, #1E4D8C 50%, #2563EB 100%);
+      padding: 100px 6% 80px;
+      text-align: center; color: #fff;
+    }
+    .hero-badge {
+      display: inline-block; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+      padding: 6px 16px; border-radius: 100px; font-size: 0.8rem; font-weight: 600;
+      letter-spacing: 0.5px; margin-bottom: 24px; backdrop-filter: blur(4px);
+    }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; line-height: 1.15; margin-bottom: 24px; }
+    .hero h1 span { color: #93C5FD; }
+    .hero p { font-size: 1.15rem; opacity: 0.9; max-width: 600px; margin: 0 auto 40px; line-height: 1.7; }
+    .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary-lg {
+      background: #fff; color: #003087; padding: 14px 32px; border-radius: 10px;
+      font-weight: 700; font-size: 1rem; border: none; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .btn-primary-lg:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(0,0,0,0.25); }
+    .btn-outline-lg {
+      background: transparent; color: #fff; padding: 14px 32px; border-radius: 10px;
+      font-weight: 600; font-size: 1rem; border: 2px solid rgba(255,255,255,0.5); cursor: pointer;
+    }
+    .btn-outline-lg:hover { background: rgba(255,255,255,0.1); }
+
+    /* Stats bar */
+    .stats-bar {
+      background: #F9FAFB; border-bottom: 1px solid #E5E7EB;
+      display: flex; justify-content: center; gap: 0; flex-wrap: wrap;
+    }
+    .stat-item { padding: 28px 48px; text-align: center; border-right: 1px solid #E5E7EB; }
+    .stat-item:last-child { border-right: none; }
+    .stat-value { font-size: 2rem; font-weight: 900; color: #003087; }
+    .stat-label { font-size: 0.85rem; color: #6B7280; margin-top: 4px; }
+
+    /* Features */
+    .section { padding: 80px 6%; }
+    .section-title { text-align: center; margin-bottom: 56px; }
+    .section-title h2 { font-size: clamp(1.75rem, 3vw, 2.5rem); font-weight: 800; color: #111827; margin-bottom: 16px; }
+    .section-title p { font-size: 1.05rem; color: #6B7280; max-width: 560px; margin: 0 auto; line-height: 1.7; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; }
+    .feature-card {
+      background: #fff; border: 1px solid #E5E7EB; border-radius: 16px; padding: 32px;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .feature-card:hover { box-shadow: 0 12px 40px rgba(0,48,135,0.1); transform: translateY(-3px); }
+    .feature-icon { font-size: 2.2rem; margin-bottom: 16px; }
+    .feature-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; color: #111827; }
+    .feature-card p { font-size: 0.9rem; color: #6B7280; line-height: 1.6; }
+
+    /* Workflow */
+    .workflow { background: #F0F4FF; padding: 80px 6%; }
+    .workflow-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0; position: relative; }
+    .workflow-step { text-align: center; padding: 32px 24px; position: relative; }
+    .step-number {
+      width: 52px; height: 52px; background: #003087; color: #fff;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; font-weight: 800; margin: 0 auto 16px;
+    }
+    .workflow-step h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; color: #111827; }
+    .workflow-step p { font-size: 0.85rem; color: #6B7280; line-height: 1.6; }
+
+    /* Pricing */
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; max-width: 900px; margin: 0 auto; }
+    .pricing-card {
+      border: 2px solid #E5E7EB; border-radius: 16px; padding: 36px 32px; text-align: center;
+      transition: border-color 0.2s;
+    }
+    .pricing-card.popular { border-color: #003087; position: relative; }
+    .popular-badge {
+      position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+      background: #003087; color: #fff; padding: 4px 16px; border-radius: 100px; font-size: 0.75rem; font-weight: 700;
+    }
+    .pricing-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+    .pricing-price { font-size: 2.5rem; font-weight: 900; color: #003087; margin: 16px 0 4px; }
+    .pricing-price span { font-size: 1rem; font-weight: 400; color: #6B7280; }
+    .pricing-desc { font-size: 0.85rem; color: #6B7280; margin-bottom: 24px; }
+    .pricing-features { list-style: none; text-align: left; margin-bottom: 28px; }
+    .pricing-features li { padding: 6px 0; font-size: 0.875rem; color: #374151; }
+    .pricing-features li::before { content: "✓ "; color: #16A34A; font-weight: 700; }
+    .btn-pricing {
+      display: block; width: 100%; padding: 12px; border-radius: 10px;
+      font-weight: 700; font-size: 0.95rem; border: 2px solid #003087;
+      background: #003087; color: #fff; cursor: pointer;
+    }
+    .btn-pricing.outline { background: transparent; color: #003087; }
+    .btn-pricing:hover { opacity: 0.9; }
+
+    /* CTA */
+    .cta-section {
+      background: linear-gradient(135deg, #003087, #2563EB);
+      padding: 80px 6%; text-align: center; color: #fff;
+    }
+    .cta-section h2 { font-size: clamp(1.75rem, 3vw, 2.5rem); font-weight: 800; margin-bottom: 16px; }
+    .cta-section p { font-size: 1.05rem; opacity: 0.9; margin-bottom: 36px; }
+
+    /* Footer */
+    footer {
+      background: #111827; color: #9CA3AF; padding: 40px 6%;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+    }
+    footer a { color: #9CA3AF; }
+    footer a:hover { color: #fff; }
+
+    @media (max-width: 640px) {
+      .stat-item { padding: 20px 24px; border-right: none; border-bottom: 1px solid #E5E7EB; }
+      .nav-links .hide-mobile { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Navigation ─────────────────────────────────────────────────── -->
+<nav>
+  <div class="logo">
+    <div class="logo-icon">🎯</div>
+    Adynex
+  </div>
+  <div class="nav-links">
+    <a href="#features" class="hide-mobile">Features</a>
+    <a href="#workflow" class="hide-mobile">So funktioniert's</a>
+    <a href="#pricing" class="hide-mobile">Preise</a>
+    <a href="{{ url_for('auth.login') }}" class="btn-nav">Anmelden</a>
+  </div>
+</nav>
+
+<!-- ── Hero ───────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-badge">🚀 Jetzt verfügbar · Beta</div>
+  <h1>Mehr Bewerber.<br><span>Weniger Aufwand.</span></h1>
+  <p>Adynex automatisiert Google Ads &amp; Microsoft Ads Kampagnen für Personaldienstleister – von der Stellenanzeige bis zur Conversion, vollständig ohne manuellen Aufwand.</p>
+  <div class="hero-buttons">
+    <a href="{{ url_for('auth.login') }}" class="btn-primary-lg">Kostenlos starten →</a>
+    <a href="#workflow" class="btn-outline-lg">So funktioniert's</a>
+  </div>
+</section>
+
+<!-- ── Stats ──────────────────────────────────────────────────────── -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-value">2 Min.</div>
+    <div class="stat-label">bis zur ersten Kampagne</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-value">2 Plattformen</div>
+    <div class="stat-label">Google Ads + Microsoft Ads</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-value">100%</div>
+    <div class="stat-label">automatisiert</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-value">DSGVO</div>
+    <div class="stat-label">Server in Deutschland</div>
+  </div>
+</div>
+
+<!-- ── Features ───────────────────────────────────────────────────── -->
+<section class="section" id="features">
+  <div class="section-title">
+    <h2>Alles was du brauchst</h2>
+    <p>Von der Kampagnenerstellung bis zum Reporting – Adynex übernimmt den kompletten Workflow für dein Team.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🔗</div>
+      <h3>URL eingeben, fertig</h3>
+      <p>Einfach die URL der Stellenanzeige eingeben. Adynex liest Jobtitel, Ort und Details automatisch aus und erstellt die passenden Anzeigen.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎯</div>
+      <h3>KI-generierte Keywords</h3>
+      <p>Automatisch passende Keywords und Anzeigentexte für jede Stelle – optimiert für maximale Klickrate in der Personalbranche.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⏸️</div>
+      <h3>Auto-Pause bei Conversion-Limit</h3>
+      <p>Kampagnen pausieren automatisch wenn die gewünschte Bewerberzahl erreicht ist. Kein verschwendetes Budget mehr.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Reporting nach Kostenstelle</h3>
+      <p>Alle KPIs – Ausgaben, Conversions, CPA – übersichtlich nach Niederlassung und Kostenstelle. Als Excel und PDF exportierbar.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🏢</div>
+      <h3>Multi-Niederlassung</h3>
+      <p>Verwalte beliebig viele Niederlassungen in einem Account. Jede Filiale sieht nur ihre eigenen Kampagnen.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎯</div>
+      <h3>Performance Score</h3>
+      <p>Jede Kampagne bekommt einen Score 0–100. Auf einen Blick erkennst du welche Kampagnen performen und welche nicht.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Workflow ────────────────────────────────────────────────────── -->
+<section class="workflow" id="workflow">
+  <div class="section-title">
+    <h2>In 4 Schritten live</h2>
+    <p>Von der offenen Stelle zur laufenden Anzeige in unter 2 Minuten.</p>
+  </div>
+  <div class="workflow-steps">
+    <div class="workflow-step">
+      <div class="step-number">1</div>
+      <h3>URL eingeben</h3>
+      <p>Stelle die URL der Stellenanzeige ein. Adynex liest alle Infos automatisch aus.</p>
+    </div>
+    <div class="workflow-step">
+      <div class="step-number">2</div>
+      <h3>Budget festlegen</h3>
+      <p>Google Ads Budget, Microsoft Ads Budget und optional ein Conversion-Limit setzen.</p>
+    </div>
+    <div class="workflow-step">
+      <div class="step-number">3</div>
+      <h3>Admin gibt frei</h3>
+      <p>Kampagne geht zur Freigabe. Admin prüft und aktiviert mit einem Klick.</p>
+    </div>
+    <div class="workflow-step">
+      <div class="step-number">4</div>
+      <h3>Automatisch live</h3>
+      <p>Kampagne wird in Google Ads und Microsoft Ads erstellt. Reporting läuft automatisch.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Pricing ─────────────────────────────────────────────────────── -->
+<section class="section" id="pricing">
+  <div class="section-title">
+    <h2>Einfache Preise</h2>
+    <p>Keine versteckten Kosten. Keine Setup-Gebühren. Jederzeit kündbar.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <h3>Starter</h3>
+      <div class="pricing-price">99 € <span>/ Monat</span></div>
+      <div class="pricing-desc">Für einzelne Niederlassungen</div>
+      <ul class="pricing-features">
+        <li>1 Niederlassung</li>
+        <li>Bis zu 20 Kampagnen/Monat</li>
+        <li>Google Ads + Microsoft Ads</li>
+        <li>Reporting + Excel-Export</li>
+        <li>E-Mail Support</li>
+      </ul>
+      <a href="{{ url_for('auth.login') }}" class="btn-pricing outline">Jetzt starten</a>
+    </div>
+    <div class="pricing-card popular">
+      <div class="popular-badge">⭐ Beliebt</div>
+      <h3>Professional</h3>
+      <div class="pricing-price">249 € <span>/ Monat</span></div>
+      <div class="pricing-desc">Für regionale Personaldienstleister</div>
+      <ul class="pricing-features">
+        <li>Bis zu 10 Niederlassungen</li>
+        <li>Unbegrenzte Kampagnen</li>
+        <li>Google Ads + Microsoft Ads</li>
+        <li>Reporting + Excel + PDF</li>
+        <li>Auto-Pause & Budget-Alerts</li>
+        <li>Performance Score</li>
+        <li>Prioritäts-Support</li>
+      </ul>
+      <a href="{{ url_for('auth.login') }}" class="btn-pricing">Jetzt starten</a>
+    </div>
+    <div class="pricing-card">
+      <h3>Enterprise</h3>
+      <div class="pricing-price" style="font-size:1.8rem">Auf Anfrage</div>
+      <div class="pricing-desc">Für nationale Ketten &amp; Konzerne</div>
+      <ul class="pricing-features">
+        <li>Unbegrenzte Niederlassungen</li>
+        <li>White-Label Option</li>
+        <li>Dedicated Account Manager</li>
+        <li>SLA-Garantie</li>
+        <li>Custom Integrationen</li>
+      </ul>
+      <a href="mailto:info@adynex.de" class="btn-pricing outline">Kontakt aufnehmen</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ────────────────────────────────────────────────────────── -->
+<section class="cta-section">
+  <h2>Bereit loszulegen?</h2>
+  <p>Erstelle deinen kostenlosen Account und schalte deine erste Kampagne in unter 2 Minuten.</p>
+  <a href="{{ url_for('auth.login') }}" class="btn-primary-lg" style="display:inline-block">
+    Jetzt kostenlos starten →
+  </a>
+</section>
+
+<!-- ── Footer ─────────────────────────────────────────────────────── -->
+<footer>
+  <div>
+    <strong style="color:#fff">Adynex</strong> · Automatisierte Search-Kampagnen für Personaldienstleister
+  </div>
+  <div style="display:flex;gap:24px">
+    <a href="mailto:info@adynex.de">info@adynex.de</a>
+    <a href="{{ url_for('auth.login') }}">Login</a>
+    <span>© 2026 Adynex</span>
+  </div>
+</footer>
+
+</body>
+</html>

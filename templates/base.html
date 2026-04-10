@@ -220,7 +220,7 @@
 
       {% if current_user.is_admin %}
       <div class="nav-section" style="margin-top:1rem;">Administration</div>
-      <a href="{{ url_for('admin.index') }}" class="nav-link {% if request.endpoint and 'admin' in request.endpoint %}active{% endif %}">
+      <a href="{{ url_for('admin.index') }}" class="nav-link {% if request.endpoint == 'admin.index' %}active{% endif %}">
         <span class="icon">⚙️</span> Verwaltung
       </a>
       <a href="{{ url_for('admin.new_niederlassung') }}" class="nav-link">
@@ -229,17 +229,24 @@
       <a href="{{ url_for('admin.new_user') }}" class="nav-link">
         <span class="icon">👤</span> Benutzer anlegen
       </a>
+      <a href="{{ url_for('admin.settings') }}" class="nav-link {% if request.endpoint == 'admin.settings' %}active{% endif %}">
+        <span class="icon">🔧</span> Einstellungen
+      </a>
       {% endif %}
     </div>
 
     <div class="sidebar-footer">
-      <div>{{ current_user.full_name }}</div>
-      {% if current_user.niederlassung %}
-      <div style="opacity:0.8; font-size:0.72rem;">
-        {{ current_user.niederlassung.name }} · KST-{{ current_user.niederlassung.kostenstelle }}
-      </div>
-      {% endif %}
-      <a href="{{ url_for('auth.logout') }}" style="margin-top:0.5rem; display:block;">Abmelden →</a>
+      <a href="{{ url_for('admin.profile') }}"
+         style="display:flex;flex-direction:column;text-decoration:none;color:inherit;margin-bottom:4px">
+        <div style="font-weight:600">{{ current_user.full_name }}</div>
+        {% if current_user.niederlassung %}
+        <div style="opacity:0.8; font-size:0.72rem;">
+          {{ current_user.niederlassung.name }} · KST-{{ current_user.niederlassung.kostenstelle }}
+        </div>
+        {% endif %}
+        <div style="opacity:0.7;font-size:0.72rem;margin-top:1px">Profil bearbeiten →</div>
+      </a>
+      <a href="{{ url_for('auth.logout') }}" style="margin-top:0.25rem; display:block;opacity:0.8">Abmelden →</a>
     </div>
   </nav>
   {% endif %}

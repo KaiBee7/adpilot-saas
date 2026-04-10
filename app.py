@@ -14,8 +14,9 @@ from routes.dashboard  import dashboard_bp
 from routes.campaigns  import campaigns_bp
 from routes.admin      import admin_bp
 from routes.api        import api_bp
-from routes.reporting  import reporting_bp
-from routes.export     import export_bp
+from routes.reporting   import reporting_bp
+from routes.export      import export_bp
+from routes.onboarding  import onboarding_bp
 
 load_dotenv()
 
@@ -56,6 +57,7 @@ def create_app():
     app.register_blueprint(api_bp)
     app.register_blueprint(reporting_bp)
     app.register_blueprint(export_bp)
+    app.register_blueprint(onboarding_bp)
 
     # ── Fehler-Handler ────────────────────────────────────────────────────
     register_error_handlers(app)
@@ -74,7 +76,7 @@ def create_app():
     def index():
         if current_user.is_authenticated:
             return redirect(url_for("dashboard.index"))
-        return redirect(url_for("auth.login"))
+        return render_template("landing.html")
 
     # ── DB Tabellen erstellen (nur Entwicklung) ───────────────────────────
     with app.app_context():

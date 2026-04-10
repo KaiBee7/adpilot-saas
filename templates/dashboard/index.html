@@ -4,6 +4,16 @@
 
 {% block content %}
 
+{# ── Onboarding-Banner ── #}
+{% if current_user.is_admin and not current_user.mandant.onboarding_done %}
+<div class="alert alert-info" style="display:flex;justify-content:space-between;align-items:center">
+  <span>👋 <strong>Willkommen bei Adynex!</strong> Schließe die Einrichtung ab um das Beste aus der Plattform zu holen.</span>
+  <a href="{{ url_for('onboarding.start') }}" class="btn btn-primary btn-sm" style="white-space:nowrap;margin-left:16px">
+    Einrichtung starten →
+  </a>
+</div>
+{% endif %}
+
 {# ── Budget-Alerts ── #}
 {% for c in budget_alerts %}
 <div class="alert alert-warning">

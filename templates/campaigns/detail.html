@@ -35,7 +35,8 @@
   </div>
 
   {% if current_user.is_admin %}
-  <div style="display:flex;gap:10px">
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+
     {% if campaign.status == 'pending_approval' %}
     <form method="POST" action="{{ url_for('campaigns.approve', campaign_id=campaign.id) }}">
       <button type="submit" class="btn btn-success"
@@ -43,7 +44,11 @@
         ✅ Freigeben
       </button>
     </form>
+    <button type="button" class="btn btn-secondary" onclick="document.getElementById('reject-modal').style.display='flex'">
+      ❌ Ablehnen
+    </button>
     {% endif %}
+
     {% if campaign.status == 'active' %}
     <form method="POST" action="{{ url_for('campaigns.pause', campaign_id=campaign.id) }}">
       <button type="submit" class="btn btn-secondary"
@@ -51,9 +56,40 @@
         ⏸️ Pausieren
       </button>
     </form>
+    <form method="POST" action="{{ url_for('campaigns.complete', campaign_id=campaign.id) }}">
+      <button type="submit" class="btn btn-secondary"
+              onclick="return confirm('Kampagne als abgeschlossen markieren?')">
+        ✔️ Abschließen
+      </button>
+    </form>
     {% endif %}
+
+    {% if campaign.status == 'paused' %}
+    <form method="POST" action="{{ url_for('campaigns.resume', campaign_id=campaign.id) }}">
+      <button type="submit" class="btn btn-success"
+              onclick="return confirm('Kampagne wieder aktivieren?')">
+        ▶️ Fortsetzen
+      </button>
+    </form>
+    {% endif %}
+
   </div>
   {% endif %}
+
+<!-- Ablehnen-Modal -->
+<div id="reject-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;padding:28px;width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+    <h3 style="margin-bottom:16px;color:#111">Kampagne ablehnen</h3>
+    <form method="POST" action="{{ url_for('campaigns.reject', campaign_id=campaign.id) }}">
+      <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px">Ablehnungsgrund</label>
+      <textarea name="reason" rows="3" class="form-control" placeholder="z.B. Budget zu hoch, falsche Niederlassung..." style="margin-bottom:16px"></textarea>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('reject-modal').style.display='none'">Abbrechen</button>
+        <button type="submit" class="btn" style="background:#DC2626;color:#fff">❌ Ablehnen</button>
+      </div>
+    </form>
+  </div>
+</div>
 </div>
 
 <!-- ── KPI-Karten ──────────────────────────────────────────────────── -->
