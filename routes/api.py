@@ -1,10 +1,12 @@
 """API-Routes – JSON-Endpunkte für Frontend und externe Integrationen."""
 
+import os
 from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
 from models import db, Campaign, Niederlassung
 from modules.email_parser import parse_email
 from modules.job_scraper import scrape_job
+from modules.tasks import run_campaign_checks
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -53,6 +55,21 @@ def campaign_kpis(campaign_id):
         "budget_pct":  campaign.budget_spent_pct,
         "status":      campaign.status,
     })
+
+
+@api_bp.route("/cron/check-campaigns", methods=["GET", "POST"])
+def cron_check_campaigns():
+    """
+    Cron-Endpoint: Prüft alle aktiven Kampagnen auf Conversion-Limit und Budget.
+    Wird von Render Cron Job oder externem Dienst aufgerufen.
+    Gesichert mit CRON_SECRET Umgebungsvariable.
+    """
+    secret = os.getenv("CRON_SECRET", "")
+    if secret and request.headers.get("X-Cron-Secret") != secret:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    result = run_campaign_checks(force=True)
+    return jsonify({"success": True, "result": result})
 
 
 @api_bp.route("/niederlassungen/<int:nl_id>/budget")

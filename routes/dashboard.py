@@ -5,6 +5,7 @@ from flask_login import login_required, current_user
 from models import db, Campaign, Niederlassung
 from sqlalchemy import func
 from datetime import datetime
+from modules.tasks import run_campaign_checks
 
 dashboard_bp = Blueprint("dashboard", __name__, url_prefix="/dashboard")
 
@@ -12,6 +13,12 @@ dashboard_bp = Blueprint("dashboard", __name__, url_prefix="/dashboard")
 @dashboard_bp.route("/")
 @login_required
 def index():
+    # Auto-Pause Check – läuft max. 1x pro 10 Minuten im Hintergrund
+    try:
+        run_campaign_checks()
+    except Exception as e:
+        print(f"[Tasks] Check-Fehler: {e}")
+
     mandant = current_user.mandant
 
     # Niederlassungen die dieser User sehen darf
